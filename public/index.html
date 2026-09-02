@@ -40,12 +40,12 @@
         }
 
         html, body {
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            min-height: 100vh;
             margin: 0;
             padding: 0;
-            overflow: hidden;
             background-color: #0b1e42;
+            overflow-x: hidden;
         }
 
         /* 🌌 FULL SCREEN REALTIME SYNC ANIMATION CANVAS */
@@ -64,11 +64,15 @@
         #login-view {
             width: 100vw;
             height: 100vh;
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
             background: url('/syntally_background.png') no-repeat center center;
-            background-size: 100% 100%;
-            overflow: hidden;
+            background-size: cover;
+            overflow-y: auto;
+            overflow-x: hidden;
             display: flex;
+            z-index: 20;
         }
 
         /* 🤍 COMPACT, SLEEK FROSTED GLASS LOGIN CARD PINNED INSIDE BLUE SECTION */
@@ -261,12 +265,12 @@
         #dashboard-view {
             display: none;
             min-height: 100vh;
-            width: 100vw;
+            width: 100%;
             background: linear-gradient(180deg, #eef4fb 0%, #f8fafc 100%);
-            padding: 24px;
-            overflow-y: auto;
+            padding: 24px 20px 60px;
+            box-sizing: border-box;
             position: relative;
-            z-index: 10;
+            z-index: 30;
         }
 
         .container {
@@ -982,15 +986,38 @@
                 }
             }
 
-            requestAnimationFrame(animateSyncNetwork);
+            canvasAnimationId = requestAnimationFrame(animateSyncNetwork);
         }
-        animateSyncNetwork();
+
+        function startCanvas() {
+            if (!isCanvasRunning) {
+                isCanvasRunning = true;
+                const c = document.getElementById('sync-canvas');
+                if (c) c.style.display = 'block';
+                animateSyncNetwork();
+            }
+        }
+
+        function stopCanvas() {
+            isCanvasRunning = false;
+            if (canvasAnimationId) {
+                cancelAnimationFrame(canvasAnimationId);
+                canvasAnimationId = null;
+            }
+            const c = document.getElementById('sync-canvas');
+            if (c) c.style.display = 'none';
+        }
+
+        startCanvas();
 
         // ⚡ DASHBOARD & TABS LOGIC
         let currentAuth = null;
         let currentTab = 'all';
         let searchQuery = '';
         let pollInterval = null;
+        let cachedRecords = [];
+        let activeAbortController = null;
+        let searchTimer = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             const saved = localStorage.getItem('synctally_cloud_auth');
@@ -1043,15 +1070,72 @@
         }
 
         function showDashboard() {
+            document.body.style.overflowY = 'auto';
+            document.body.style.backgroundColor = '#eef4fb';
             document.getElementById('login-view').style.display = 'none';
             document.getElementById('dashboard-view').style.display = 'block';
+            stopCanvas();
             
             const badgeIcon = currentAuth.institute_type === 'college' ? '🎓' : '🏫';
             document.getElementById('nav-company-details').textContent = `${badgeIcon} ${currentAuth.company_name} [${currentAuth.company_code}]`;
 
             fetchLiveMetrics();
             if (pollInterval) clearInterval(pollInterval);
-            pollInterval = setInterval(fetchLiveMetrics, 5000);
+            pollInterval = setInterval(fetchLiveMetrics, 6000);
+        }
+
+        function renderTableRows(records) {
+            const tbody = document.getElementById('live-table-body');
+            if (!records || records.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">No student records found matching active filter.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = records.map(row => {
+                let syncBadge = `<span class="tag-pill tag-null">NULL (NEW)</span>`;
+                if (row.tally_sync === 'S') syncBadge = `<span class="tag-pill tag-s">SYNCED (S)</span>`;
+                else if (row.tally_sync === 'U') syncBadge = `<span class="tag-pill tag-u">MODIFIED (U)</span>`;
+
+                let statusBadge = `<span style="color: #64748b; font-weight: 700;">Active</span>`;
+                if (row.student_status === 'L') statusBadge = `<span class="tag-pill tag-l">LEFT OUT</span>`;
+                else if (row.student_status === 'P') statusBadge = `<span class="tag-pill tag-passout">PASSED OUT</span>`;
+
+                return `
+                    <tr>
+                        <td><strong>${row.enrl_no}</strong></td>
+                        <td>${row.student_name || 'N/A'}</td>
+                        <td>${row.class_branch}</td>
+                        <td>${statusBadge}</td>
+                        <td>${syncBadge}</td>
+                        <td style="color: #64748b; font-size: 13px;">${row.activity_time}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function applyLocalFilter() {
+            if (!cachedRecords || cachedRecords.length === 0) return;
+            const q = searchQuery.toLowerCase().trim();
+            const filtered = cachedRecords.filter(row => {
+                let matchesTab = true;
+                const ts = (row.tally_sync || 'NULL').toUpperCase().trim();
+                const ss = (row.student_status || '').toUpperCase().trim();
+
+                if (currentTab === 's' || currentTab === 'synced') matchesTab = (ts === 'S');
+                else if (currentTab === 'u' || currentTab === 'pending') matchesTab = (ts === 'U' || ts === '');
+                else if (currentTab === 'null' || currentTab === 'new') matchesTab = (ts === 'NULL' || !row.tally_sync);
+                else if (currentTab === 'l' || currentTab === 'left') matchesTab = (ss === 'L');
+                else if (currentTab === 'p' || currentTab === 'passout') matchesTab = (ss === 'P');
+
+                if (!matchesTab) return false;
+                if (!q) return true;
+
+                const enrl = (row.enrl_no || '').toLowerCase();
+                const name = (row.student_name || '').toLowerCase();
+                const branch = (row.class_branch || '').toLowerCase();
+                return enrl.includes(q) || name.includes(q) || branch.includes(q);
+            });
+            renderTableRows(filtered);
         }
 
         function setTabFilter(tabName) {
@@ -1075,19 +1159,33 @@
                 }
             });
 
+            // 🚀 Instant responsive UI update (<1ms)
+            applyLocalFilter();
+
+            // Background refresh from server
             fetchLiveMetrics();
         }
 
         function handleTableSearch(val) {
             searchQuery = val.trim();
-            fetchLiveMetrics();
+            applyLocalFilter(); // Instant keypress filter
+
+            if (searchTimer) clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                fetchLiveMetrics();
+            }, 300);
         }
 
         async function fetchLiveMetrics() {
             if (!currentAuth) return;
+            if (activeAbortController) {
+                activeAbortController.abort();
+            }
+            activeAbortController = new AbortController();
+
             try {
                 const url = `/api/metrics?company_id=${currentAuth.company_id}&institute_type=${currentAuth.institute_type}&tab=${currentTab}&q=${encodeURIComponent(searchQuery)}`;
-                const res = await fetch(url);
+                const res = await fetch(url, { signal: activeAbortController.signal });
                 if (!res.ok) return;
                 const m = await res.json();
 
@@ -1109,34 +1207,14 @@
                 document.getElementById('health-pct').textContent = `${pct}% Synced`;
                 document.getElementById('health-fill').style.width = `${pct}%`;
 
-                const tbody = document.getElementById('live-table-body');
-                if (m.student_records && m.student_records.length > 0) {
-                    tbody.innerHTML = m.student_records.map(row => {
-                        let syncBadge = `<span class="tag-pill tag-null">NULL (NEW)</span>`;
-                        if (row.tally_sync === 'S') syncBadge = `<span class="tag-pill tag-s">SYNCED (S)</span>`;
-                        else if (row.tally_sync === 'U') syncBadge = `<span class="tag-pill tag-u">MODIFIED (U)</span>`;
-
-                        let statusBadge = `<span style="color: #64748b; font-weight: 700;">Active</span>`;
-                        if (row.student_status === 'L') statusBadge = `<span class="tag-pill tag-l">LEFT OUT</span>`;
-                        else if (row.student_status === 'P') statusBadge = `<span class="tag-pill tag-passout">PASSED OUT</span>`;
-
-                        return `
-                            <tr>
-                                <td><strong>${row.enrl_no}</strong></td>
-                                <td>${row.student_name || 'N/A'}</td>
-                                <td>${row.class_branch}</td>
-                                <td>${statusBadge}</td>
-                                <td>${syncBadge}</td>
-                                <td style="color: #64748b; font-size: 13px;">${row.activity_time}</td>
-                            </tr>
-                        `;
-                    }).join('');
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">No student records found matching active filter.</td></tr>`;
+                if (m.student_records) {
+                    cachedRecords = m.student_records;
+                    renderTableRows(m.student_records);
                 }
-
             } catch (err) {
-                console.error("Failed to fetch live metrics:", err);
+                if (err.name !== 'AbortError') {
+                    console.error("Failed to fetch live metrics:", err);
+                }
             }
         }
 
@@ -1144,8 +1222,11 @@
             localStorage.removeItem('synctally_cloud_auth');
             currentAuth = null;
             if (pollInterval) clearInterval(pollInterval);
+            document.body.style.overflow = 'hidden';
+            document.body.style.backgroundColor = '#0b1e42';
             document.getElementById('dashboard-view').style.display = 'none';
             document.getElementById('login-view').style.display = 'flex';
+            startCanvas();
         }
     </script>
 </body>
