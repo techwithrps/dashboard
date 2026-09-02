@@ -1,0 +1,1086 @@
+<ENVELOPE>
+ <HEADER>
+  <VERSION>1</VERSION>
+  <STATUS>1</STATUS>
+ </HEADER>
+ <BODY>
+  <DESC>
+   <CMPINFO>
+    <COMPANY>0</COMPANY>
+    <GROUP>0</GROUP>
+    <LEDGER>0</LEDGER>
+    <COSTCATEGORY>0</COSTCATEGORY>
+    <COSTCENTRE>0</COSTCENTRE>
+    <GODOWN>0</GODOWN>
+    <STOCKGROUP>0</STOCKGROUP>
+    <STOCKCATEGORY>0</STOCKCATEGORY>
+    <STOCKITEM>0</STOCKITEM>
+    <VOUCHERTYPE>0</VOUCHERTYPE>
+    <CURRENCY>0</CURRENCY>
+    <UNIT>0</UNIT>
+    <BUDGET>0</BUDGET>
+    <CLIENTRULE>0</CLIENTRULE>
+    <SERVERRULE>0</SERVERRULE>
+    <STATE>0</STATE>
+    <TDSRATE>0</TDSRATE>
+    <TAXCLASSIFICATION>0</TAXCLASSIFICATION>
+    <STCATEGORY>0</STCATEGORY>
+    <DEDUCTEETYPE>0</DEDUCTEETYPE>
+    <ATTENDANCETYPE>0</ATTENDANCETYPE>
+    <FBTCATEGORY>0</FBTCATEGORY>
+    <FBTASSESSEETYPE>0</FBTASSESSEETYPE>
+    <TARIFFCLASSIFICATION>0</TARIFFCLASSIFICATION>
+    <EXCISEDUTYCLASSIFICATION>0</EXCISEDUTYCLASSIFICATION>
+    <SERIALNUMBER>0</SERIALNUMBER>
+    <ADJUSTMENTCLASSIFICATION>0</ADJUSTMENTCLASSIFICATION>
+    <INCOMETAXSLAB>0</INCOMETAXSLAB>
+    <INCOMETAXCLASSIFICATION>0</INCOMETAXCLASSIFICATION>
+    <LBTCLASSIFICATION>0</LBTCLASSIFICATION>
+    <TAXUNIT>0</TAXUNIT>
+    <RETURNMASTER>0</RETURNMASTER>
+    <GSTCLASSIFICATION>0</GSTCLASSIFICATION>
+    <VOUCHERNUMBERSERIES>0</VOUCHERNUMBERSERIES>
+    <VOUCHER>0</VOUCHER>
+   </CMPINFO>
+  </DESC>
+  <DATA>
+   <COLLECTION ISMSTDEPTYPE="Yes" MSTDEPTYPE="4">
+    <GROUP NAME="2021-2022" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000129</GUID>
+     <PARENT TYPE="String">Session</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>2021-2022</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="2022-2023" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000128</GUID>
+     <PARENT TYPE="String">Session</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>2022-2023</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="2026-2027" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000127</GUID>
+     <PARENT TYPE="String">Session</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>2026-2027</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Bams" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000040e</GUID>
+     <PARENT TYPE="String">Student</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Bams</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BAMS(MIPS)-2ND YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000040f</GUID>
+     <PARENT TYPE="String">Bams</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BAMS(MIPS)-2ND YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BAMS(MIPS)-3RD YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000410</GUID>
+     <PARENT TYPE="String">Bams</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BAMS(MIPS)-3RD YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BAMS(MIPS)-4TH YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000411</GUID>
+     <PARENT TYPE="String">Bams</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BAMS(MIPS)-4TH YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BAMS(MPEC)-2ND YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000412</GUID>
+     <PARENT TYPE="String">Bams</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BAMS(MPEC)-2ND YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BAMS(MPEC)-3RD YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000413</GUID>
+     <PARENT TYPE="String">Bams</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BAMS(MPEC)-3RD YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Bank Accounts" RESERVEDNAME="Bank Accounts">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000016</GUID>
+     <PARENT TYPE="String">Current Assets</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Bank Accounts</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Bank OD A/c" RESERVEDNAME="Bank OD A/c">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000000b</GUID>
+     <PARENT TYPE="String">Loans (Liability)</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Bank OD A/c</NAME>
+       <NAME>Bank OCC A/c</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BBA" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000123</GUID>
+     <PARENT TYPE="String">ENGINEERING</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BBA</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BBA-1ST YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000133</GUID>
+     <PARENT TYPE="String">BBA</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BBA-1ST YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BBA-2ND YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000414</GUID>
+     <PARENT TYPE="String">BBA</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BBA-2ND YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BBA-3RD YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000124</GUID>
+     <PARENT TYPE="String">BBA</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BBA-3RD YEAR</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BCA" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000415</GUID>
+     <PARENT TYPE="String">Student</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BCA</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BCA-1ST YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000416</GUID>
+     <PARENT TYPE="String">BCA</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BCA-1ST YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BCA-2ND YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000417</GUID>
+     <PARENT TYPE="String">BCA</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BCA-2ND YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BCA-3RD YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000418</GUID>
+     <PARENT TYPE="String">BCA</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BCA-3RD YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Bds" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000419</GUID>
+     <PARENT TYPE="String">Student</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Bds</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BDS -1ST YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000041a</GUID>
+     <PARENT TYPE="String">Bds</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BDS -1ST YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="B.Pharma" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000408</GUID>
+     <PARENT TYPE="String">Student</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>B.Pharma</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="B.PHARMA-1ST YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000409</GUID>
+     <PARENT TYPE="String">B.Pharma</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>B.PHARMA-1ST YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="B.PHARMA-2ND YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000040a</GUID>
+     <PARENT TYPE="String">B.Pharma</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>B.PHARMA-2ND YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="B.PHARMA-2ND YEAR-LATERAL ENTRY" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000040b</GUID>
+     <PARENT TYPE="String">B.Pharma</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>B.PHARMA-2ND YEAR-LATERAL ENTRY</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="B.PHARMA-3RD YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000040c</GUID>
+     <PARENT TYPE="String">B.Pharma</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>B.PHARMA-3RD YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="B.PHARMA-4TH YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000040d</GUID>
+     <PARENT TYPE="String">B.Pharma</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>B.PHARMA-4TH YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Branch / Divisions" RESERVEDNAME="Branch / Divisions">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000007</GUID>
+     <PARENT TYPE="String">&#4; Primary</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Branch / Divisions</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="B.Sc" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000041b</GUID>
+     <PARENT TYPE="String">Student</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>B.Sc</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BSC NURSING" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000121</GUID>
+     <PARENT TYPE="String">Student</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BSC NURSING</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BSC NURSING-1ST YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-000001ba</GUID>
+     <PARENT TYPE="String">BSC NURSING</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BSC NURSING-1ST YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BSC NURSING-2ND YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000041c</GUID>
+     <PARENT TYPE="String">B.Sc</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BSC NURSING-2ND YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BSC NURSING-3RD YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000041d</GUID>
+     <PARENT TYPE="String">B.Sc</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BSC NURSING-3RD YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="BSC NURSING-4TH YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000122</GUID>
+     <PARENT TYPE="String">BSC NURSING</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>BSC NURSING-4TH YEAR</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="B.TECH" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000125</GUID>
+     <PARENT TYPE="String">ENGINEERING</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>B.TECH</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Bus Fees" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-000000df</GUID>
+     <PARENT TYPE="String">Direct Incomes</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Bus Fees</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Capital Account" RESERVEDNAME="Capital Account">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000001</GUID>
+     <PARENT TYPE="String">&#4; Primary</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Capital Account</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Cash-in-Hand" RESERVEDNAME="Cash-in-Hand">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000015</GUID>
+     <PARENT TYPE="String">Current Assets</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Cash-in-Hand</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CIVIL-1ST YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-000001b9</GUID>
+     <PARENT TYPE="String">B.TECH</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CIVIL-1ST YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Class" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000041e</GUID>
+     <PARENT TYPE="String">Student</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Class</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CLASS-1" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000041f</GUID>
+     <PARENT TYPE="String">Class</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CLASS-1</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CLASS-10" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000420</GUID>
+     <PARENT TYPE="String">Class</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CLASS-10</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CLASS-11" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000421</GUID>
+     <PARENT TYPE="String">Class</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CLASS-11</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CLASS-12" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000422</GUID>
+     <PARENT TYPE="String">Class</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CLASS-12</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CLASS-2" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000423</GUID>
+     <PARENT TYPE="String">Class</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CLASS-2</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CLASS-3" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000424</GUID>
+     <PARENT TYPE="String">Class</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CLASS-3</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CLASS-4" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000425</GUID>
+     <PARENT TYPE="String">Class</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CLASS-4</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CLASS-5" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000426</GUID>
+     <PARENT TYPE="String">Class</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CLASS-5</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CLASS-6" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000427</GUID>
+     <PARENT TYPE="String">Class</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CLASS-6</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CLASS-7" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000428</GUID>
+     <PARENT TYPE="String">Class</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CLASS-7</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CLASS-8" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000429</GUID>
+     <PARENT TYPE="String">Class</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CLASS-8</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CLASS-9" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000042a</GUID>
+     <PARENT TYPE="String">Class</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CLASS-9</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CLASS-LKG" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000042b</GUID>
+     <PARENT TYPE="String">Class</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CLASS-LKG</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CLASS-PG" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000042c</GUID>
+     <PARENT TYPE="String">Class</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CLASS-PG</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CLASS-UKG" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000042d</GUID>
+     <PARENT TYPE="String">Class</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CLASS-UKG</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Cse" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000042e</GUID>
+     <PARENT TYPE="String">Student</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Cse</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CSE-1ST YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000126</GUID>
+     <PARENT TYPE="String">Student</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CSE-1ST YEAR</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CSE-2ND YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000013c</GUID>
+     <PARENT TYPE="String">B.TECH</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CSE-2ND YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CSE-2ND YEAR-LATERAL ENTRY" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000042f</GUID>
+     <PARENT TYPE="String">Cse</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CSE-2ND YEAR-LATERAL ENTRY</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CSE-3RD YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000430</GUID>
+     <PARENT TYPE="String">Cse</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CSE-3RD YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="CSE-4TH YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000013a</GUID>
+     <PARENT TYPE="String">B.TECH</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>CSE-4TH YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Current Assets" RESERVEDNAME="Current Assets">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000006</GUID>
+     <PARENT TYPE="String">&#4; Primary</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Current Assets</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Current Liabilities" RESERVEDNAME="Current Liabilities">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000003</GUID>
+     <PARENT TYPE="String">&#4; Primary</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Current Liabilities</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Deposits (Asset)" RESERVEDNAME="Deposits (Asset)">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000012</GUID>
+     <PARENT TYPE="String">Current Assets</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Deposits (Asset)</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Direct Expenses" RESERVEDNAME="Direct Expenses">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000001a</GUID>
+     <PARENT TYPE="String">&#4; Primary</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Direct Expenses</NAME>
+       <NAME>Expenses (Direct)</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Direct Incomes" RESERVEDNAME="Direct Incomes">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000019</GUID>
+     <PARENT TYPE="String">&#4; Primary</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Direct Incomes</NAME>
+       <NAME>Income (Direct)</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="D.Pharma" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000431</GUID>
+     <PARENT TYPE="String">Student</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>D.Pharma</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="D.PHARMA-1ST YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000432</GUID>
+     <PARENT TYPE="String">D.Pharma</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>D.PHARMA-1ST YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="D.PHARMA-2ND YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000433</GUID>
+     <PARENT TYPE="String">D.Pharma</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>D.PHARMA-2ND YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Duties &amp; Taxes" RESERVEDNAME="Duties &amp; Taxes">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000000e</GUID>
+     <PARENT TYPE="String">Current Liabilities</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Duties &amp; Taxes</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="EC-1ST YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000016a</GUID>
+     <PARENT TYPE="String">B.TECH</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>EC-1ST YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="ENGINEERING" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000011f</GUID>
+     <PARENT TYPE="String">Student</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>ENGINEERING</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Fees Head" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-000000dd</GUID>
+     <PARENT TYPE="String">Direct Incomes</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Fees Head</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Fixed Assets" RESERVEDNAME="Fixed Assets">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000004</GUID>
+     <PARENT TYPE="String">&#4; Primary</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Fixed Assets</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Hostel Fees" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-000000de</GUID>
+     <PARENT TYPE="String">Direct Incomes</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Hostel Fees</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Hostel Fees Security" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-000000e2</GUID>
+     <PARENT TYPE="String">Current Liabilities</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Hostel Fees Security</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Indirect Expenses" RESERVEDNAME="Indirect Expenses">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000001c</GUID>
+     <PARENT TYPE="String">&#4; Primary</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Indirect Expenses</NAME>
+       <NAME>Expenses (Indirect)</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Indirect Incomes" RESERVEDNAME="Indirect Incomes">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000001b</GUID>
+     <PARENT TYPE="String">&#4; Primary</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Indirect Incomes</NAME>
+       <NAME>Income (Indirect)</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Investments" RESERVEDNAME="Investments">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000005</GUID>
+     <PARENT TYPE="String">&#4; Primary</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Investments</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Left From School" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-000000e3</GUID>
+     <PARENT TYPE="String">Sundry Debtors</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Left From School</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Loans &amp; Advances (Asset)" RESERVEDNAME="Loans &amp; Advances (Asset)">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000013</GUID>
+     <PARENT TYPE="String">Current Assets</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Loans &amp; Advances (Asset)</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Loans (Liability)" RESERVEDNAME="Loans (Liability)">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000002</GUID>
+     <PARENT TYPE="String">&#4; Primary</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Loans (Liability)</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="MBA" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000437</GUID>
+     <PARENT TYPE="String">Student</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>MBA</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="MBA-1ST YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000438</GUID>
+     <PARENT TYPE="String">MBA</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>MBA-1ST YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="MBA-2ND YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000439</GUID>
+     <PARENT TYPE="String">MBA</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>MBA-2ND YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="MCA" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000043a</GUID>
+     <PARENT TYPE="String">Student</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>MCA</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="MCA-1ST YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000043b</GUID>
+     <PARENT TYPE="String">MCA</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>MCA-1ST YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="MCA-2ND YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000043c</GUID>
+     <PARENT TYPE="String">MCA</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>MCA-2ND YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="ME-1ST YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000013b</GUID>
+     <PARENT TYPE="String">B.TECH</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>ME-1ST YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Misc. Expenses (ASSET)" RESERVEDNAME="Misc. Expenses (ASSET)">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000008</GUID>
+     <PARENT TYPE="String">&#4; Primary</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Misc. Expenses (ASSET)</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="M.pharma" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000434</GUID>
+     <PARENT TYPE="String">Student</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>M.pharma</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="M.PHARMA-1ST YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000435</GUID>
+     <PARENT TYPE="String">M.pharma</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>M.PHARMA-1ST YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="M.PHARMA-2ND YEAR" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000436</GUID>
+     <PARENT TYPE="String">M.pharma</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>M.PHARMA-2ND YEAR</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Passout Student" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-000000e8</GUID>
+     <PARENT TYPE="String">Sundry Debtors</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Passout Student</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="PHARMACY" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000120</GUID>
+     <PARENT TYPE="String">Student</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>PHARMACY</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Provisions" RESERVEDNAME="Provisions">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000000f</GUID>
+     <PARENT TYPE="String">Current Liabilities</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Provisions</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Purchase Accounts" RESERVEDNAME="Purchase Accounts">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000018</GUID>
+     <PARENT TYPE="String">&#4; Primary</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Purchase Accounts</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Reserves &amp; Surplus" RESERVEDNAME="Reserves &amp; Surplus">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000000a</GUID>
+     <PARENT TYPE="String">Capital Account</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Reserves &amp; Surplus</NAME>
+       <NAME>Retained Earnings</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Sales Accounts" RESERVEDNAME="Sales Accounts">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000017</GUID>
+     <PARENT TYPE="String">&#4; Primary</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Sales Accounts</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Secured Loans" RESERVEDNAME="Secured Loans">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000000c</GUID>
+     <PARENT TYPE="String">Loans (Liability)</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Secured Loans</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Security" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-000000e1</GUID>
+     <PARENT TYPE="String">Current Liabilities</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Security</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Session" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-000000e0</GUID>
+     <PARENT TYPE="String">Sundry Debtors</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Session</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Stock-in-Hand" RESERVEDNAME="Stock-in-Hand">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000011</GUID>
+     <PARENT TYPE="String">Current Assets</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Stock-in-Hand</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Student" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-000000dc</GUID>
+     <PARENT TYPE="String">Sundry Debtors</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Student</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Student Left" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-000000ea</GUID>
+     <PARENT TYPE="String">Left From School</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Student Left</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Student Passout" RESERVEDNAME="">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-000000e9</GUID>
+     <PARENT TYPE="String">Passout Student</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Student Passout</NAME>
+      </NAME.LIST>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Sundry Creditors" RESERVEDNAME="Sundry Creditors">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000010</GUID>
+     <PARENT TYPE="String">Current Liabilities</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Sundry Creditors</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Sundry Debtors" RESERVEDNAME="Sundry Debtors">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000014</GUID>
+     <PARENT TYPE="String">Current Assets</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Sundry Debtors</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Suspense A/c" RESERVEDNAME="Suspense A/c">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-00000009</GUID>
+     <PARENT TYPE="String">&#4; Primary</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Suspense A/c</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+    <GROUP NAME="Unsecured Loans" RESERVEDNAME="Unsecured Loans">
+     <GUID TYPE="String">a86c8566-c77d-4e72-ad5a-ddbbf761ec50-0000000d</GUID>
+     <PARENT TYPE="String">Loans (Liability)</PARENT>
+     <LANGUAGENAME.LIST>
+      <NAME.LIST TYPE="String">
+       <NAME>Unsecured Loans</NAME>
+      </NAME.LIST>
+      <LANGUAGEID TYPE="Number"> 1033</LANGUAGEID>
+     </LANGUAGENAME.LIST>
+    </GROUP>
+   </COLLECTION>
+  </DATA>
+ </BODY>
+</ENVELOPE>
