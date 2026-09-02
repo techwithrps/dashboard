@@ -878,14 +878,26 @@
 
     <!-- 🌌 FULL SCREEN DATA FLOW ANIMATION SCRIPT -->
     <script>
+        // ⚡ GLOBAL PORTAL STATE (Declared at top to prevent TDZ ReferenceError)
+        var currentAuth = null;
+        var currentTab = 'all';
+        var searchQuery = '';
+        var pollInterval = null;
+        var cachedRecords = [];
+        var activeAbortController = null;
+        var searchTimer = null;
+        var canvasAnimationId = null;
+        var isCanvasRunning = false;
+
         const canvas = document.getElementById('sync-canvas');
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas ? canvas.getContext('2d') : null;
 
         let width, height;
         let particles = [];
         let dataPackets = [];
 
         function resize() {
+            if (!canvas) return;
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
         }
@@ -1009,15 +1021,6 @@
         }
 
         startCanvas();
-
-        // ⚡ DASHBOARD & TABS LOGIC
-        let currentAuth = null;
-        let currentTab = 'all';
-        let searchQuery = '';
-        let pollInterval = null;
-        let cachedRecords = [];
-        let activeAbortController = null;
-        let searchTimer = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             const saved = localStorage.getItem('synctally_cloud_auth');
