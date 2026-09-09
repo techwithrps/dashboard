@@ -40,12 +40,12 @@
         }
 
         html, body {
-            width: 100%;
-            min-height: 100vh;
+            width: 100vw;
+            height: 100vh;
             margin: 0;
             padding: 0;
+            overflow: hidden;
             background-color: #0b1e42;
-            overflow-x: hidden;
         }
 
         /* 🌌 FULL SCREEN REALTIME SYNC ANIMATION CANVAS */
@@ -60,36 +60,49 @@
             opacity: 0.9;
         }
 
-        /* 🖼️ TRUE FULL-SCREEN 100VW x 100VH LOGIN STAGE */
+        /* 🖼️ ASPECT-RATIO PRESERVED FULL-SCREEN LOGIN STAGE */
         #login-view {
             width: 100vw;
             height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background: url('/syntally_background.png') no-repeat center center;
-            background-size: cover;
-            overflow-y: auto;
-            overflow-x: hidden;
+            position: relative;
+            background-color: #06132b;
+            overflow: hidden;
             display: flex;
-            z-index: 20;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* 🤍 COMPACT, SLEEK FROSTED GLASS LOGIN CARD PINNED INSIDE BLUE SECTION */
+        /* 16:9 PROPORTIONAL STAGE WRAPPER TO PREVENT ZOOM & STRETCH */
+        .login-stage-wrapper {
+            position: relative;
+            width: 100vw;
+            height: 56.25vw; /* 16:9 aspect ratio */
+            max-height: 100vh;
+            max-width: 177.78vh; /* 16:9 aspect ratio */
+            background: url('/syntally_background.png') no-repeat center center;
+            background-size: 100% 100%;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        /* 🤍 PIXEL-PERFECT ALIGNED FROSTED GLASS LOGIN CARD */
         .form-stage-box {
             position: absolute;
-            top: 50%;
+            top: 55%;
             transform: translateY(-50%);
-            right: 5.5%;
-            width: 29.5%;
-            max-width: 410px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1.5px solid rgba(255, 255, 255, 0.95);
-            border-radius: 26px;
-            padding: clamp(22px, 2.2vw, 32px) clamp(20px, 2vw, 30px);
-            box-shadow: 0 20px 50px -10px rgba(7, 24, 64, 0.35), 0 0 30px rgba(255, 255, 255, 0.3) inset;
+            right: 5.7%;
+            width: 21.5%;
+            min-width: 280px;
+            max-width: 360px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1.5px solid rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 18px 22px;
+            box-shadow: 0 15px 40px -10px rgba(5, 18, 50, 0.45), 0 0 20px rgba(255, 255, 255, 0.4) inset;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -97,7 +110,6 @@
             text-align: center;
             box-sizing: border-box;
             z-index: 10;
-            animation: glassFloat 5.5s ease-in-out infinite alternate;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
         }
@@ -265,12 +277,12 @@
         #dashboard-view {
             display: none;
             min-height: 100vh;
-            width: 100%;
+            width: 100vw;
             background: linear-gradient(180deg, #eef4fb 0%, #f8fafc 100%);
-            padding: 24px 20px 60px;
-            box-sizing: border-box;
+            padding: 24px;
+            overflow-y: auto;
             position: relative;
-            z-index: 30;
+            z-index: 10;
         }
 
         .container {
@@ -686,6 +698,7 @@
     <div id="login-view">
         
         <!-- 🤍 COMPACT, SLEEK FROSTED GLASS LOGIN CARD -->
+        <div class="login-stage-wrapper">
         <div class="form-stage-box">
             <div class="login-badge">
                 <span>⚡</span> <span>Enterprise Sync Portal</span>
@@ -714,6 +727,7 @@
             <div class="portal-security-tag">
                 <span>🔒</span> <span>Encrypted Multi-Tenant Gateway</span>
             </div>
+        </div>
         </div>
 
     </div>
@@ -878,26 +892,14 @@
 
     <!-- 🌌 FULL SCREEN DATA FLOW ANIMATION SCRIPT -->
     <script>
-        // ⚡ GLOBAL PORTAL STATE (Declared at top to prevent TDZ ReferenceError)
-        var currentAuth = null;
-        var currentTab = 'all';
-        var searchQuery = '';
-        var pollInterval = null;
-        var cachedRecords = [];
-        var activeAbortController = null;
-        var searchTimer = null;
-        var canvasAnimationId = null;
-        var isCanvasRunning = false;
-
         const canvas = document.getElementById('sync-canvas');
-        const ctx = canvas ? canvas.getContext('2d') : null;
+        const ctx = canvas.getContext('2d');
 
         let width, height;
         let particles = [];
         let dataPackets = [];
 
         function resize() {
-            if (!canvas) return;
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
         }
@@ -998,29 +1000,15 @@
                 }
             }
 
-            canvasAnimationId = requestAnimationFrame(animateSyncNetwork);
+            requestAnimationFrame(animateSyncNetwork);
         }
+        animateSyncNetwork();
 
-        function startCanvas() {
-            if (!isCanvasRunning) {
-                isCanvasRunning = true;
-                const c = document.getElementById('sync-canvas');
-                if (c) c.style.display = 'block';
-                animateSyncNetwork();
-            }
-        }
-
-        function stopCanvas() {
-            isCanvasRunning = false;
-            if (canvasAnimationId) {
-                cancelAnimationFrame(canvasAnimationId);
-                canvasAnimationId = null;
-            }
-            const c = document.getElementById('sync-canvas');
-            if (c) c.style.display = 'none';
-        }
-
-        startCanvas();
+        // ⚡ DASHBOARD & TABS LOGIC
+        let currentAuth = null;
+        let currentTab = 'all';
+        let searchQuery = '';
+        let pollInterval = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             const saved = localStorage.getItem('synctally_cloud_auth');
@@ -1073,72 +1061,15 @@
         }
 
         function showDashboard() {
-            document.body.style.overflowY = 'auto';
-            document.body.style.backgroundColor = '#eef4fb';
             document.getElementById('login-view').style.display = 'none';
             document.getElementById('dashboard-view').style.display = 'block';
-            stopCanvas();
             
             const badgeIcon = currentAuth.institute_type === 'college' ? '🎓' : '🏫';
             document.getElementById('nav-company-details').textContent = `${badgeIcon} ${currentAuth.company_name} [${currentAuth.company_code}]`;
 
             fetchLiveMetrics();
             if (pollInterval) clearInterval(pollInterval);
-            pollInterval = setInterval(fetchLiveMetrics, 6000);
-        }
-
-        function renderTableRows(records) {
-            const tbody = document.getElementById('live-table-body');
-            if (!records || records.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">No student records found matching active filter.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = records.map(row => {
-                let syncBadge = `<span class="tag-pill tag-null">NULL (NEW)</span>`;
-                if (row.tally_sync === 'S') syncBadge = `<span class="tag-pill tag-s">SYNCED (S)</span>`;
-                else if (row.tally_sync === 'U') syncBadge = `<span class="tag-pill tag-u">MODIFIED (U)</span>`;
-
-                let statusBadge = `<span style="color: #64748b; font-weight: 700;">Active</span>`;
-                if (row.student_status === 'L') statusBadge = `<span class="tag-pill tag-l">LEFT OUT</span>`;
-                else if (row.student_status === 'P') statusBadge = `<span class="tag-pill tag-passout">PASSED OUT</span>`;
-
-                return `
-                    <tr>
-                        <td><strong>${row.enrl_no}</strong></td>
-                        <td>${row.student_name || 'N/A'}</td>
-                        <td>${row.class_branch}</td>
-                        <td>${statusBadge}</td>
-                        <td>${syncBadge}</td>
-                        <td style="color: #64748b; font-size: 13px;">${row.activity_time}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function applyLocalFilter() {
-            if (!cachedRecords || cachedRecords.length === 0) return;
-            const q = searchQuery.toLowerCase().trim();
-            const filtered = cachedRecords.filter(row => {
-                let matchesTab = true;
-                const ts = (row.tally_sync || 'NULL').toUpperCase().trim();
-                const ss = (row.student_status || '').toUpperCase().trim();
-
-                if (currentTab === 's' || currentTab === 'synced') matchesTab = (ts === 'S');
-                else if (currentTab === 'u' || currentTab === 'pending') matchesTab = (ts === 'U' || ts === '');
-                else if (currentTab === 'null' || currentTab === 'new') matchesTab = (ts === 'NULL' || !row.tally_sync);
-                else if (currentTab === 'l' || currentTab === 'left') matchesTab = (ss === 'L');
-                else if (currentTab === 'p' || currentTab === 'passout') matchesTab = (ss === 'P');
-
-                if (!matchesTab) return false;
-                if (!q) return true;
-
-                const enrl = (row.enrl_no || '').toLowerCase();
-                const name = (row.student_name || '').toLowerCase();
-                const branch = (row.class_branch || '').toLowerCase();
-                return enrl.includes(q) || name.includes(q) || branch.includes(q);
-            });
-            renderTableRows(filtered);
+            pollInterval = setInterval(fetchLiveMetrics, 5000);
         }
 
         function setTabFilter(tabName) {
@@ -1162,33 +1093,19 @@
                 }
             });
 
-            // 🚀 Instant responsive UI update (<1ms)
-            applyLocalFilter();
-
-            // Background refresh from server
             fetchLiveMetrics();
         }
 
         function handleTableSearch(val) {
             searchQuery = val.trim();
-            applyLocalFilter(); // Instant keypress filter
-
-            if (searchTimer) clearTimeout(searchTimer);
-            searchTimer = setTimeout(() => {
-                fetchLiveMetrics();
-            }, 300);
+            fetchLiveMetrics();
         }
 
         async function fetchLiveMetrics() {
             if (!currentAuth) return;
-            if (activeAbortController) {
-                activeAbortController.abort();
-            }
-            activeAbortController = new AbortController();
-
             try {
                 const url = `/api/metrics?company_id=${currentAuth.company_id}&institute_type=${currentAuth.institute_type}&tab=${currentTab}&q=${encodeURIComponent(searchQuery)}`;
-                const res = await fetch(url, { signal: activeAbortController.signal });
+                const res = await fetch(url);
                 if (!res.ok) return;
                 const m = await res.json();
 
@@ -1210,14 +1127,34 @@
                 document.getElementById('health-pct').textContent = `${pct}% Synced`;
                 document.getElementById('health-fill').style.width = `${pct}%`;
 
-                if (m.student_records) {
-                    cachedRecords = m.student_records;
-                    renderTableRows(m.student_records);
+                const tbody = document.getElementById('live-table-body');
+                if (m.student_records && m.student_records.length > 0) {
+                    tbody.innerHTML = m.student_records.map(row => {
+                        let syncBadge = `<span class="tag-pill tag-null">NULL (NEW)</span>`;
+                        if (row.tally_sync === 'S') syncBadge = `<span class="tag-pill tag-s">SYNCED (S)</span>`;
+                        else if (row.tally_sync === 'U') syncBadge = `<span class="tag-pill tag-u">MODIFIED (U)</span>`;
+
+                        let statusBadge = `<span style="color: #64748b; font-weight: 700;">Active</span>`;
+                        if (row.student_status === 'L') statusBadge = `<span class="tag-pill tag-l">LEFT OUT</span>`;
+                        else if (row.student_status === 'P') statusBadge = `<span class="tag-pill tag-passout">PASSED OUT</span>`;
+
+                        return `
+                            <tr>
+                                <td><strong>${row.enrl_no}</strong></td>
+                                <td>${row.student_name || 'N/A'}</td>
+                                <td>${row.class_branch}</td>
+                                <td>${statusBadge}</td>
+                                <td>${syncBadge}</td>
+                                <td style="color: #64748b; font-size: 13px;">${row.activity_time}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">No student records found matching active filter.</td></tr>`;
                 }
+
             } catch (err) {
-                if (err.name !== 'AbortError') {
-                    console.error("Failed to fetch live metrics:", err);
-                }
+                console.error("Failed to fetch live metrics:", err);
             }
         }
 
@@ -1225,11 +1162,8 @@
             localStorage.removeItem('synctally_cloud_auth');
             currentAuth = null;
             if (pollInterval) clearInterval(pollInterval);
-            document.body.style.overflow = 'hidden';
-            document.body.style.backgroundColor = '#0b1e42';
             document.getElementById('dashboard-view').style.display = 'none';
             document.getElementById('login-view').style.display = 'flex';
-            startCanvas();
         }
     </script>
 </body>
