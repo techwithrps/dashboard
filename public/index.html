@@ -1403,6 +1403,112 @@
             font-size: 14px;
             font-weight: 600;
         }
+            /* 🌐 TOP NAV MODULE TABS (Master, Transaction, Administration) */
+        .nav-modules-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 5px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .nav-module-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #64748b;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-module-btn:hover {
+            color: var(--brand-primary);
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .nav-module-btn.active-module {
+            background: #ffffff;
+            color: var(--brand-primary);
+            box-shadow: 0 2px 8px rgba(0, 102, 204, 0.15);
+        }
+
+        .module-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-weight: 800;
+        }
+            /* 🚀 BEAUTIFUL COMING SOON UI */
+        .coming-soon-stage {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 80px 30px;
+            margin: 20px 0;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            border: 1.5px dashed #bae6fd;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px -10px rgba(0, 102, 204, 0.08);
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .cs-icon-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 24px;
+            background: #e0f2fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(3, 105, 161, 0.15);
+        }
+
+        .cs-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: #0b1e42;
+            margin-bottom: 10px;
+        }
+
+        .cs-desc {
+            font-size: 15px;
+            color: #64748b;
+            max-width: 520px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .cs-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12.5px;
+            font-weight: 800;
+            background: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 
 </head>
@@ -1504,32 +1610,51 @@
             <!-- Navbar -->
 
             <header class="white-card navbar">
-
                 <div class="brand-box">
-
                     <div class="nav-logo-card">
-
                         <img src="/logo.png" alt="Logo" class="nav-logo-img" onerror="this.parentElement.style.display='none'">
-
                     </div>
-
                     <div class="company-pill">
-
                         <span class="status-dot"></span>
-
                         <span id="nav-company-details">Loading...</span>
-
                     </div>
+                </div>
 
+                <!-- 🚀 3 MAIN MODULE TABS: Master, Transaction, Administration -->
+                <div class="nav-modules-group">
+                    <button class="nav-module-btn active-module" id="nav-mod-master" onclick="switchNavModule('master')">
+                        <span>📊</span>
+                        <span>Master</span>
+                        <span class="module-badge">Live</span>
+                    </button>
+                    <button class="nav-module-btn" id="nav-mod-transaction" onclick="switchNavModule('transaction')">
+                        <span>💳</span>
+                        <span>Transaction</span>
+                        <span class="module-badge" style="background:#fef3c7; color:#b45309;">Vouchers</span>
+                    </button>
+                    <button class="nav-module-btn" id="nav-mod-admin" onclick="switchNavModule('admin')">
+                        <span>⚙️</span>
+                        <span>Administration</span>
+                    </button>
                 </div>
 
                 <div>
-
                     <button class="btn-signout" onclick="handleSignOut()">Switch Company</button>
-
                 </div>
-
             </header>
+
+            <!-- 🚀 COMING SOON CONTAINER FOR TRANSACTION & ADMIN -->
+            <div id="coming-soon-view" class="coming-soon-stage">
+                <div class="cs-icon-box" id="cs-icon">💳</div>
+                <div class="cs-badge" id="cs-badge">🚀 Feature Under Active Deployment</div>
+                <h2 class="cs-title" id="cs-title">Transaction & Vouchers Module</h2>
+                <p class="cs-desc" id="cs-desc">
+                    Real-time automated Tally Daybook reconciliation, fee receipt vouchers, and payment transaction synchronizations will be available here soon.
+                </p>
+                <button class="nav-module-btn" style="background: var(--brand-primary); color: #fff; padding: 10px 24px;" onclick="switchNavModule('master')">
+                    &larr; Back to Master Dashboard
+                </button>
+            </div>
 
 
 
@@ -2152,6 +2277,53 @@
         let fetchController = null;
         let searchDebounceTimer = null;
 
+        
+        let currentNavModule = 'master';
+        function switchNavModule(moduleName) {
+            currentNavModule = moduleName;
+            const mods = ['master', 'transaction', 'admin'];
+            mods.forEach(m => {
+                const btn = document.getElementById(`nav-mod-${m}`);
+                if (btn) {
+                    if (m === moduleName) btn.classList.add('active-module');
+                    else btn.classList.remove('active-module');
+                }
+            });
+
+            const metricsGrid = document.querySelector('.metrics-grid');
+            const healthBanner = document.querySelector('.health-banner');
+            const tablePanel = document.querySelector('.table-panel');
+            const csView = document.getElementById('coming-soon-view');
+
+            if (moduleName === 'master') {
+                if (csView) csView.style.display = 'none';
+                if (metricsGrid) metricsGrid.style.display = 'grid';
+                if (healthBanner) healthBanner.style.display = 'flex';
+                if (tablePanel) tablePanel.style.display = 'block';
+                fetchLiveMetrics(false);
+            } else if (moduleName === 'transaction') {
+                if (metricsGrid) metricsGrid.style.display = 'none';
+                if (healthBanner) healthBanner.style.display = 'none';
+                if (tablePanel) tablePanel.style.display = 'none';
+                if (csView) {
+                    csView.style.display = 'flex';
+                    document.getElementById('cs-icon').textContent = '💳';
+                    document.getElementById('cs-title').textContent = 'Transaction & Vouchers Module';
+                    document.getElementById('cs-desc').textContent = 'Real-time automated Tally Daybook reconciliation, fee receipt vouchers, and payment transaction synchronizations are coming soon in the next update.';
+                }
+            } else if (moduleName === 'admin') {
+                if (metricsGrid) metricsGrid.style.display = 'none';
+                if (healthBanner) healthBanner.style.display = 'none';
+                if (tablePanel) tablePanel.style.display = 'none';
+                if (csView) {
+                    csView.style.display = 'flex';
+                    document.getElementById('cs-icon').textContent = '⚙️';
+                    document.getElementById('cs-title').textContent = 'Administration & Node Controls';
+                    document.getElementById('cs-desc').textContent = 'Multi-tenant database configuration, remote Tally endpoint routing, audit log monitoring, and automated cron maintenance settings are coming soon.';
+                }
+            }
+        }
+
         function showDashboard() {
             document.body.classList.remove('login-active');
             document.body.classList.add('dashboard-active');
@@ -2286,12 +2458,12 @@
 
                             return `
                                 <tr>
-                                    <td class="cell-primary font-mono">${row.enrollment_no || '-'}</td>
+                                    <td class="cell-primary font-mono">${row.enrl_no || row.enrollment_no || '-'}</td>
                                     <td class="font-bold">${row.student_name || '-'}</td>
-                                    <td class="cell-secondary">${row.student_class || '-'}</td>
+                                    <td class="cell-secondary">${row.class_branch || row.student_class || '-'}</td>
                                     <td>${statusBadge}</td>
                                     <td>${syncBadge}</td>
-                                    <td class="cell-secondary font-mono">${row.last_active || '-'}</td>
+                                    <td class="cell-secondary font-mono">${row.activity_time || row.last_active || '-'}</td>
                                 </tr>
                             `;
                         }).join('');
