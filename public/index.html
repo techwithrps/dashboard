@@ -60,49 +60,36 @@
             opacity: 0.9;
         }
 
-        /* 🖼️ ASPECT-RATIO PRESERVED FULL-SCREEN LOGIN STAGE */
+        /* 🖼️ TRUE EDGE-TO-EDGE 100VW x 100VH FULL-SCREEN LOGIN STAGE */
         #login-view {
             width: 100vw;
             height: 100vh;
             position: relative;
-            background-color: #06132b;
+            margin: 0;
+            padding: 0;
+            background: url('/syntally_background.png') no-repeat center center;
+            background-size: 100vw 100vh; /* Complete edge-to-edge fill, zero letterboxing / empty bars */
             overflow: hidden;
             display: flex;
             align-items: center;
-            justify-content: center;
         }
 
-        /* 16:9 PROPORTIONAL STAGE WRAPPER TO PREVENT ZOOM & STRETCH */
-        .login-stage-wrapper {
-            position: relative;
-            width: 100vw;
-            height: 56.25vw; /* 16:9 aspect ratio */
-            max-height: 100vh;
-            max-width: 177.78vh; /* 16:9 aspect ratio */
-            background: url('/syntally_background.png') no-repeat center center;
-            background-size: 100% 100%;
-            margin: auto;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-        }
-
-        /* 🤍 PIXEL-PERFECT ALIGNED FROSTED GLASS LOGIN CARD */
+        /* 🤍 SLEEK PIXEL-PERFECT FROSTED GLASS LOGIN CARD PINNED TO BLUE SECTION */
         .form-stage-box {
             position: absolute;
             top: 55%;
             transform: translateY(-50%);
-            right: 5.7%;
-            width: 21.5%;
-            min-width: 280px;
-            max-width: 360px;
-            background: rgba(255, 255, 255, 0.92);
+            right: 5.6vw;
+            width: 21.5vw;
+            min-width: 290px;
+            max-width: 380px;
+            background: rgba(255, 255, 255, 0.93);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1.5px solid rgba(255, 255, 255, 0.98);
-            border-radius: 20px;
-            padding: 18px 22px;
-            box-shadow: 0 15px 40px -10px rgba(5, 18, 50, 0.45), 0 0 20px rgba(255, 255, 255, 0.4) inset;
+            border-radius: 22px;
+            padding: clamp(16px, 1.8vw, 24px) clamp(18px, 1.9vw, 26px);
+            box-shadow: 0 20px 45px -10px rgba(5, 18, 50, 0.45), 0 0 25px rgba(255, 255, 255, 0.4) inset;
             display: flex;
             flex-direction: column;
             align-items: center;
