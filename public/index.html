@@ -1,1157 +1,1163 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SyncTally Analytics - Enterprise Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-bright: #f0f4f9;
-            --surface-white: #ffffff;
-            --surface-subtle: #f8fafc;
-            --border-light: #e2e8f0;
-            --brand-primary: #0066cc;
-            --synced: #059669;
-            --synced-bg: #ecfdf5;
-            --synced-border: #a7f3d0;
-            --pending: #d97706;
-            --pending-bg: #fffbeb;
-            --pending-border: #fde68a;
-            --new: #0284c7;
-            --new-bg: #f0f9ff;
-            --new-border: #bae6fd;
-            --left: #e11d48;
-            --left-bg: #fff1f2;
-            --left-border: #fecdd3;
-            --passout: #7c3aed;
-            --passout-bg: #f5f3ff;
-            --passout-border: #ddd6fe;
-            --text-dark: #0f172a;
-            --text-sub: #475569;
-            --text-muted: #64748b;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-        }
-
-        html, body {
-            width: 100vw;
-            height: 100vh;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: #0b1e42;
-        }
-
-        /* 🌌 FULL SCREEN REALTIME SYNC ANIMATION CANVAS */
-        #sync-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 5;
-            pointer-events: none;
-            opacity: 0.9;
-        }
-
-        /* 🖼️ TRUE EDGE-TO-EDGE 100VW x 100VH FULL-SCREEN LOGIN STAGE */
-        #login-view {
-            width: 100vw;
-            height: 100vh;
-            position: relative;
-            margin: 0;
-            padding: 0;
-            background: url('/syntally_background.png') no-repeat center center;
-            background-size: 100vw 100vh; /* Complete edge-to-edge fill, zero letterboxing / empty bars */
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-        }
-
-        /* 🤍 SLEEK PIXEL-PERFECT FROSTED GLASS LOGIN CARD PINNED TO BLUE SECTION */
-        .form-stage-box {
-            position: absolute;
-            top: 55%;
-            transform: translateY(-50%);
-            right: 5.6vw;
-            width: 21.5vw;
-            min-width: 290px;
-            max-width: 380px;
-            background: rgba(255, 255, 255, 0.93);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1.5px solid rgba(255, 255, 255, 0.98);
-            border-radius: 22px;
-            padding: clamp(16px, 1.8vw, 24px) clamp(18px, 1.9vw, 26px);
-            box-shadow: 0 20px 45px -10px rgba(5, 18, 50, 0.45), 0 0 25px rgba(255, 255, 255, 0.4) inset;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            box-sizing: border-box;
-            z-index: 10;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden;
-        }
-
-        @keyframes glassFloat {
-            0% {
-                transform: translateY(-50%) translateZ(0);
-                box-shadow: 0 18px 45px -10px rgba(7, 24, 64, 0.35), 0 0 25px rgba(255, 255, 255, 0.2) inset;
-            }
-            50% {
-                transform: translateY(-53%) translateZ(0);
-                box-shadow: 0 26px 60px -8px rgba(0, 102, 204, 0.35), 0 0 35px rgba(255, 255, 255, 0.35) inset;
-            }
-            100% {
-                transform: translateY(-50%) translateZ(0);
-                box-shadow: 0 18px 45px -10px rgba(7, 24, 64, 0.35), 0 0 25px rgba(255, 255, 255, 0.2) inset;
-            }
-        }
-
-        /* Glass Shimmer Reflection */
-        .form-stage-box::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(
-                90deg, 
-                transparent, 
-                rgba(255, 255, 255, 0.35), 
-                rgba(255, 255, 255, 0.7), 
-                transparent
-            );
-            pointer-events: none;
-            animation: shimmerSweep 6s infinite cubic-bezier(0.4, 0, 0.2, 1);
-            transform: rotate(25deg);
-        }
-
-        @keyframes shimmerSweep {
-            0% { transform: translateX(-150%) rotate(25deg); opacity: 0; }
-            30% { opacity: 0.55; }
-            100% { transform: translateX(250%) rotate(25deg); opacity: 0; }
-        }
-
-        .login-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: #e0f2fe;
-            border: 1px solid #bae6fd;
-            color: #0369a1;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11.5px;
-            font-weight: 700;
-            margin-bottom: 12px;
-        }
-
-        .login-title {
-            font-size: clamp(20px, 1.6vw, 26px);
-            font-weight: 800;
-            color: #0f172a;
-            margin-bottom: 4px;
-            letter-spacing: -0.5px;
-            line-height: 1.2;
-        }
-
-        .login-subtitle {
-            font-size: clamp(11.5px, 0.8vw, 13px);
-            color: #64748b;
-            margin-bottom: 18px;
-            line-height: 1.4;
-        }
-
-        .login-form {
-            width: 100%;
-        }
-
-        .input-group {
-            margin-bottom: 14px;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 11.5px;
-            font-weight: 700;
-            color: #334155;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .input-field {
-            width: 100%;
-            padding: clamp(9px, 0.8vw, 13px) clamp(12px, 0.9vw, 15px);
-            background: rgba(255, 255, 255, 0.9);
-            border: 1.5px solid #cbd5e1;
-            border-radius: 10px;
-            color: #0f172a;
-            font-size: 13.5px;
-            font-weight: 600;
-            outline: none;
-            transition: all 0.2s ease;
-        }
-
-        .input-field:focus {
-            background: #ffffff;
-            border-color: #0066cc;
-            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: clamp(10px, 0.9vw, 13px);
-            background: linear-gradient(135deg, #0066cc 0%, #004c99 100%);
-            border: none;
-            border-radius: 10px;
-            color: #ffffff;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            box-shadow: 0 6px 18px -3px rgba(0, 102, 204, 0.45);
-            margin-top: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 24px -3px rgba(0, 102, 204, 0.6);
-            background: linear-gradient(135deg, #0055b3 0%, #003d80 100%);
-        }
-
-        .error-box {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            display: none;
-            text-align: left;
-            width: 100%;
-        }
-
-        .portal-security-tag {
-            font-size: 11px;
-            color: #94a3b8;
-            margin-top: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            font-weight: 600;
-        }
-
-        /* ☀️ 2. BRIGHT & FRESH ENTERPRISE DASHBOARD */
-        #dashboard-view {
-            display: none;
-            min-height: 100vh;
-            width: 100vw;
-            background: linear-gradient(180deg, #eef4fb 0%, #f8fafc 100%);
-            padding: 24px;
-            overflow-y: auto;
-            position: relative;
-            z-index: 10;
-        }
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyncTally Analytics - Enterprise Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-bright: #f0f4f9;
+            --surface-white: #ffffff;
+            --surface-subtle: #f8fafc;
+            --border-light: #e2e8f0;
+            --brand-primary: #0066cc;
+            --synced: #059669;
+            --synced-bg: #ecfdf5;
+            --synced-border: #a7f3d0;
+            --pending: #d97706;
+            --pending-bg: #fffbeb;
+            --pending-border: #fde68a;
+            --new: #0284c7;
+            --new-bg: #f0f9ff;
+            --new-border: #bae6fd;
+            --left: #e11d48;
+            --left-bg: #fff1f2;
+            --left-border: #fecdd3;
+            --passout: #7c3aed;
+            --passout-bg: #f5f3ff;
+            --passout-border: #ddd6fe;
+            --text-dark: #0f172a;
+            --text-sub: #475569;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #0b1e42;
+        }
+
+        /* 🌌 FULL SCREEN REALTIME SYNC ANIMATION CANVAS */
+        #sync-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 5;
+            pointer-events: none;
+            opacity: 0.9;
+        }
+
+        /* 🖼️ TRUE EDGE-TO-EDGE 100VW x 100VH FULL-SCREEN LOGIN STAGE */
+        #login-view {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            margin: 0;
+            padding: 0;
+            background: url('/syntally_background.png') no-repeat center center;
+            background-size: 100vw 100vh; /* Complete edge-to-edge fill, zero letterboxing / empty bars */
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 🤍 SLEEK PIXEL-PERFECT FROSTED GLASS LOGIN CARD PINNED TO BLUE SECTION */
+        .form-stage-box {
+            position: absolute;
+            top: 55%;
+            transform: translateY(-50%);
+            right: 5.6vw;
+            width: 21.5vw;
+            min-width: 290px;
+            max-width: 380px;
+            background: rgba(255, 255, 255, 0.93);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1.5px solid rgba(255, 255, 255, 0.98);
+            border-radius: 22px;
+            padding: clamp(16px, 1.8vw, 24px) clamp(18px, 1.9vw, 26px);
+            box-shadow: 0 20px 45px -10px rgba(5, 18, 50, 0.45), 0 0 25px rgba(255, 255, 255, 0.4) inset;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-sizing: border-box;
+            z-index: 10;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        @keyframes glassFloat {
+            0% {
+                transform: translateY(-50%) translateZ(0);
+                box-shadow: 0 18px 45px -10px rgba(7, 24, 64, 0.35), 0 0 25px rgba(255, 255, 255, 0.2) inset;
+            }
+            50% {
+                transform: translateY(-53%) translateZ(0);
+                box-shadow: 0 26px 60px -8px rgba(0, 102, 204, 0.35), 0 0 35px rgba(255, 255, 255, 0.35) inset;
+            }
+            100% {
+                transform: translateY(-50%) translateZ(0);
+                box-shadow: 0 18px 45px -10px rgba(7, 24, 64, 0.35), 0 0 25px rgba(255, 255, 255, 0.2) inset;
+            }
+        }
+
+        /* Glass Shimmer Reflection */
+        .form-stage-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.35), 
+                rgba(255, 255, 255, 0.7), 
+                transparent
+            );
+            pointer-events: none;
+            animation: shimmerSweep 6s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            transform: rotate(25deg);
+        }
+
+        @keyframes shimmerSweep {
+            0% { transform: translateX(-150%) rotate(25deg); opacity: 0; }
+            30% { opacity: 0.55; }
+            100% { transform: translateX(250%) rotate(25deg); opacity: 0; }
+        }
+
+        .login-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #e0f2fe;
+            border: 1px solid #bae6fd;
+            color: #0369a1;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .login-title {
+            font-size: clamp(20px, 1.6vw, 26px);
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .login-subtitle {
+            font-size: clamp(11.5px, 0.8vw, 13px);
+            color: #64748b;
+            margin-bottom: 18px;
+            line-height: 1.4;
+        }
+
+        .login-form {
+            width: 100%;
+        }
+
+        .input-group {
+            margin-bottom: 14px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: clamp(9px, 0.8vw, 13px) clamp(12px, 0.9vw, 15px);
+            background: rgba(255, 255, 255, 0.9);
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            color: #0f172a;
+            font-size: 13.5px;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .input-field:focus {
+            background: #ffffff;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: clamp(10px, 0.9vw, 13px);
+            background: linear-gradient(135deg, #0066cc 0%, #004c99 100%);
+            border: none;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 6px 18px -3px rgba(0, 102, 204, 0.45);
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px -3px rgba(0, 102, 204, 0.6);
+            background: linear-gradient(135deg, #0055b3 0%, #003d80 100%);
+        }
+
+        .error-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: none;
+            text-align: left;
+            width: 100%;
+        }
+
+        .portal-security-tag {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-weight: 600;
+        }
+
+        /* ☀️ 2. BRIGHT & FRESH ENTERPRISE DASHBOARD */
+        #dashboard-view {
+            display: none;
+            min-height: 100vh;
+            width: 100vw;
+            background: linear-gradient(180deg, #eef4fb 0%, #f8fafc 100%);
+            padding: 24px;
+            overflow-y: auto;
+            position: relative;
+            z-index: 10;
+        }
+
         .container {
-            max-width: 1360px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .white-card {
-            background: var(--surface-white);
-            border: 1px solid var(--border-light);
-            border-radius: 20px;
-            box-shadow: 0 8px 24px -6px rgba(15, 43, 92, 0.08), 0 2px 6px -1px rgba(15, 43, 92, 0.04);
-        }
-
-        .navbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 28px;
-            margin-bottom: 24px;
-        }
-
-        .brand-box {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .nav-logo-card {
-            background: #ffffff;
-            padding: 4px 10px;
-            border-radius: 10px;
-            border: 1px solid #e2e8f0;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .nav-logo-img {
-            max-height: 38px;
-            max-width: 130px;
-            object-fit: contain;
-            display: block;
-        }
-
-        .company-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: #e0f2fe;
-            border: 1px solid #bae6fd;
-            padding: 8px 18px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: 700;
-            color: #0369a1;
-        }
-
-        .status-dot {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            background: #10b981;
-            box-shadow: 0 0 10px #10b981;
-            animation: pulse 1.8s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
-        }
-
-        .btn-signout {
-            background: #fff1f2;
-            border: 1px solid #fecdd3;
-            color: #e11d48;
-            padding: 9px 20px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-signout:hover {
-            background: #ffe4e6;
-            border-color: #fda4af;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 18px;
-            margin-bottom: 24px;
-        }
-
-        .metric-card {
-            padding: 22px 24px;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            user-select: none;
-            border: 1.5px solid transparent;
-        }
-
-        .metric-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 16px 32px -8px rgba(15, 43, 92, 0.12);
-        }
-
-        .metric-card.active-filter-card {
-            border-color: var(--brand-primary);
-            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2);
-            transform: translateY(-4px);
-        }
-
-        .metric-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 5px;
-            height: 100%;
-        }
-
-        .card-synced::before { background: var(--synced); }
-        .card-pending::before { background: var(--pending); }
-        .card-new::before { background: var(--new); }
-        .card-left::before { background: var(--left); }
-        .card-passout::before { background: var(--passout); }
-
-        .metric-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-
-        .metric-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-sub);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .metric-badge {
-            font-size: 11px;
-            font-weight: 800;
-            padding: 4px 10px;
-            border-radius: 6px;
-            letter-spacing: 0.5px;
-        }
-
-        .badge-synced { background: var(--synced-bg); color: var(--synced); border: 1px solid var(--synced-border); }
-        .badge-pending { background: var(--pending-bg); color: var(--pending); border: 1px solid var(--pending-border); }
-        .badge-new { background: var(--new-bg); color: var(--new); border: 1px solid var(--new-border); }
-        .badge-left { background: var(--left-bg); color: var(--left); border: 1px solid var(--left-border); }
-        .badge-passout { background: var(--passout-bg); color: var(--passout); border: 1px solid var(--passout-border); }
-
-        .metric-value {
-            font-size: 38px;
-            font-weight: 800;
-            letter-spacing: -1px;
-            margin-bottom: 4px;
-            line-height: 1.1;
-        }
-
-        .metric-sub {
-            font-size: 12px;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .card-click-hint {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--brand-primary);
-        }
-
-        .health-banner {
-            padding: 22px 28px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 20px;
-            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
-            border: 1px solid #e0f2fe;
-        }
-
-        .health-info h3 {
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--text-dark);
-            margin-bottom: 4px;
-        }
-
-        .health-info p {
-            color: var(--text-sub);
-            font-size: 14px;
-        }
-
-        .progress-box {
-            flex: 1;
-            min-width: 260px;
-            max-width: 480px;
-        }
-
-        .progress-track {
-            width: 100%;
-            height: 12px;
-            background: #e2e8f0;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #cbd5e1;
-            margin-bottom: 6px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #10b981, #0284c7);
-            border-radius: 8px;
-            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .progress-labels {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            font-weight: 800;
-            color: var(--text-sub);
-        }
-
-        .table-panel {
-            padding: 26px;
-        }
-
-        .tabs-header-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 16px;
-            margin-bottom: 22px;
-            border-bottom: 1.5px solid var(--border-light);
-            padding-bottom: 18px;
-        }
-
-        .tabs-list {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            color: var(--text-sub);
-            padding: 9px 18px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .tab-btn:hover {
-            background: #e2e8f0;
-            color: var(--text-dark);
-        }
-
-        .tab-btn.active-tab {
-            background: var(--brand-primary);
-            color: #ffffff;
-            border-color: var(--brand-primary);
-            box-shadow: 0 4px 14px -2px rgba(0, 102, 204, 0.4);
-        }
-
-        .tab-count {
-            background: rgba(0, 0, 0, 0.1);
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 800;
-        }
-
-        .tab-btn.active-tab .tab-count {
-            background: rgba(255, 255, 255, 0.25);
-            color: #ffffff;
-        }
-
-        .search-box {
-            position: relative;
-            min-width: 250px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 10px 14px 10px 36px;
-            background: #f8fafc;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 10px;
-            color: var(--text-dark);
-            font-size: 13px;
-            font-weight: 600;
-            outline: none;
-            transition: all 0.2s;
-        }
-
-        .search-input:focus {
-            background: #ffffff;
-            border-color: var(--brand-primary);
-            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.12);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        .data-table th {
-            padding: 14px 18px;
-            font-size: 12px;
-            font-weight: 800;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            background: #f8fafc;
-            border-top: 1px solid var(--border-light);
-            border-bottom: 1.5px solid var(--border-light);
-        }
-
-        .data-table td {
-            padding: 16px 18px;
-            font-size: 14px;
-            color: var(--text-dark);
-            border-bottom: 1px solid var(--border-light);
-        }
-
-        .data-table tr:hover td {
-            background: #f8fafc;
-        }
-
-        .tag-pill {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .tag-s { background: var(--synced-bg); color: var(--synced); border: 1px solid var(--synced-border); }
-        .tag-u { background: var(--pending-bg); color: var(--pending); border: 1px solid var(--pending-border); }
-        .tag-null { background: var(--new-bg); color: var(--new); border: 1px solid var(--new-border); }
-        .tag-l { background: var(--left-bg); color: var(--left); border: 1px solid var(--left-border); }
-        .tag-p { background: var(--passout-bg); color: var(--passout); border: 1px solid var(--passout-border); }
-
-        @media (max-width: 1024px) {
-            .form-stage-box {
-                right: 4%;
-                width: 38%;
-            }
-        }
-
-        @media (max-width: 768px) {
-            #login-view {
-                background-size: cover;
-                align-items: center;
-                justify-content: center;
-            }
-            .form-stage-box {
-                position: static;
-                transform: none;
-                width: 90%;
-                max-width: 380px;
-                padding: 26px 20px;
-            }
-            .metrics-grid { grid-template-columns: 1fr 1fr; }
-            .navbar { flex-direction: column; gap: 16px; align-items: flex-start; }
-            .health-banner { flex-direction: column; align-items: flex-start; }
-            .tabs-header-bar { flex-direction: column; align-items: flex-start; }
-            .search-box { width: 100%; }
-        }
-    </style>
-</head>
-<body>
-
-    <!-- 🌌 FULL-SCREEN REALTIME SYNC NETWORK ANIMATION CANVAS -->
-    <canvas id="sync-canvas"></canvas>
-
-    <!-- 🖼️ 1. TRUE 100% FULL-SCREEN LOGIN STAGE -->
-    <div id="login-view">
-        
-        <!-- 🤍 COMPACT, SLEEK FROSTED GLASS LOGIN CARD -->
-        <div class="login-stage-wrapper">
-        <div class="form-stage-box">
-            <div class="login-badge">
-                <span>⚡</span> <span>Enterprise Sync Portal</span>
-            </div>
-
-            <h1 class="login-title">Sign In to Dashboard</h1>
-            <p class="login-subtitle">Enter your Company Code & Password to view live metrics.</p>
-
-            <div id="login-error" class="error-box"></div>
-
-            <form class="login-form" onsubmit="handlePortalLogin(event)">
-                <div class="input-group">
-                    <label>Company</label>
-                    <input type="text" id="login-company-code" class="input-field" placeholder="Enter Company Code" required autocomplete="off">
-                </div>
-                <div class="input-group">
-                    <label>Portal Password</label>
-                    <input type="password" id="login-password" class="input-field" placeholder="Enter portal password" required>
-                </div>
-                <button type="submit" id="btn-login-submit" class="btn-submit">
-                    <span>Access Dashboard</span>
-                    <span>&rarr;</span>
-                </button>
-            </form>
-
-            <div class="portal-security-tag">
-                <span>🔒</span> <span>Encrypted Multi-Tenant Gateway</span>
-            </div>
-        </div>
-        </div>
-
-    </div>
-
-    <!-- ☀️ 2. BRIGHT & FRESH ENTERPRISE DASHBOARD VIEW -->
-    <div id="dashboard-view">
-        <div class="container">
-            
-            <!-- Navbar -->
-            <header class="white-card navbar">
-                <div class="brand-box">
-                    <div class="nav-logo-card">
-                        <img src="/logo.png" alt="Logo" class="nav-logo-img" onerror="this.parentElement.style.display='none'">
-                    </div>
-                    <div class="company-pill">
-                        <span class="status-dot"></span>
-                        <span id="nav-company-details">Loading...</span>
-                    </div>
-                </div>
-                <div>
-                    <button class="btn-signout" onclick="handleSignOut()">Switch Company</button>
-                </div>
-            </header>
-
-            <!-- Metrics Cards Grid (Clickable to switch tab) -->
-            <div class="metrics-grid">
-                
-                <!-- Synced (S) -->
-                <div class="white-card metric-card card-synced" onclick="setTabFilter('s')" id="card-filter-s">
-                    <div class="metric-header">
-                        <span class="metric-title">Synced to Tally</span>
-                        <span class="metric-badge badge-synced">STATUS 'S'</span>
-                    </div>
-                    <div class="metric-value" id="metric-s" style="color: var(--synced);">0</div>
-                    <div class="metric-sub">
-                        <span>Fully active & up to date</span>
-                        <span class="card-click-hint">View Tab &rarr;</span>
-                    </div>
-                </div>
-
-                <!-- Pending (U) -->
-                <div class="white-card metric-card card-pending" onclick="setTabFilter('u')" id="card-filter-u">
-                    <div class="metric-header">
-                        <span class="metric-title">Pending Modified</span>
-                        <span class="metric-badge badge-pending">STATUS 'U'</span>
-                    </div>
-                    <div class="metric-value" id="metric-u" style="color: var(--pending);">0</div>
-                    <div class="metric-sub">
-                        <span>Awaiting Tally push</span>
-                        <span class="card-click-hint">View Tab &rarr;</span>
-                    </div>
-                </div>
-
-                <!-- New (NULL) -->
-                <div class="white-card metric-card card-new" onclick="setTabFilter('null')" id="card-filter-null">
-                    <div class="metric-header">
-                        <span class="metric-title">New Admissions</span>
-                        <span class="metric-badge badge-new">STATUS 'NULL'</span>
-                    </div>
-                    <div class="metric-value" id="metric-null" style="color: var(--new);">0</div>
-                    <div class="metric-sub">
-                        <span>Pending ledger creation</span>
-                        <span class="card-click-hint">View Tab &rarr;</span>
-                    </div>
-                </div>
-
-                <!-- Left (L) -->
-                <div class="white-card metric-card card-left" onclick="setTabFilter('l')" id="card-filter-l">
-                    <div class="metric-header">
-                        <span class="metric-title">Left Out Students</span>
-                        <span class="metric-badge badge-left">STATUS 'L'</span>
-                    </div>
-                    <div class="metric-value" id="metric-l" style="color: var(--left);">0</div>
-                    <div class="metric-sub">
-                        <span>Moved to Left Group</span>
-                        <span class="card-click-hint">View Tab &rarr;</span>
-                    </div>
-                </div>
-
-                <!-- Passout (P) -->
-                <div class="white-card metric-card card-passout" onclick="setTabFilter('p')" id="card-filter-p">
-                    <div class="metric-header">
-                        <span class="metric-title">Passed Out</span>
-                        <span class="metric-badge badge-passout">STATUS 'P'</span>
-                    </div>
-                    <div class="metric-value" id="metric-p" style="color: var(--passout);">0</div>
-                    <div class="metric-sub">
-                        <span>Moved to Passout Group</span>
-                        <span class="card-click-hint">View Tab &rarr;</span>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Health Banner -->
-            <div class="white-card health-banner">
-                <div class="health-info">
-                    <h3>Overall Synchronization Health</h3>
-                    <p>Total Registered Students in Database: <strong id="metric-total" style="color: var(--text-dark);">0</strong></p>
-                </div>
-                <div class="progress-box">
-                    <div class="progress-track">
-                        <div class="progress-fill" id="health-fill" style="width: 0%;"></div>
-                    </div>
-                    <div class="progress-labels">
-                        <span>Reconciliation Rate</span>
-                        <span id="health-pct" style="color: var(--brand-primary);">0% Synced</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 🗂️ TABBED STUDENT DATA EXPLORER -->
-            <div class="white-card table-panel">
-                
-                <div class="tabs-header-bar">
-                    <div class="tabs-list">
-                        <button class="tab-btn active-tab" id="tab-btn-all" onclick="setTabFilter('all')">
-                            All Students <span class="tab-count" id="count-tab-all">0</span>
-                        </button>
-                        <button class="tab-btn" id="tab-btn-s" onclick="setTabFilter('s')">
-                            🟢 Synced (S) <span class="tab-count" id="count-tab-s">0</span>
-                        </button>
-                        <button class="tab-btn" id="tab-btn-u" onclick="setTabFilter('u')">
-                            🟡 Pending (U) <span class="tab-count" id="count-tab-u">0</span>
-                        </button>
-                        <button class="tab-btn" id="tab-btn-null" onclick="setTabFilter('null')">
-                            🔵 New (NULL) <span class="tab-count" id="count-tab-null">0</span>
-                        </button>
-                        <button class="tab-btn" id="tab-btn-l" onclick="setTabFilter('l')">
-                            🔴 Left (L) <span class="tab-count" id="count-tab-l">0</span>
-                        </button>
-                        <button class="tab-btn" id="tab-btn-p" onclick="setTabFilter('p')">
-                            🟣 Passout (P) <span class="tab-count" id="count-tab-p">0</span>
-                        </button>
-                    </div>
-
-                    <div class="search-box">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" id="table-search-input" class="search-input" placeholder="Search Enrollment or Name..." oninput="handleTableSearch(this.value)">
-                    </div>
-                </div>
-
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Enrollment No</th>
-                            <th>Student Name</th>
-                            <th>Class / Branch</th>
-                            <th>Student Status</th>
-                            <th>Tally Sync Status</th>
-                            <th>Last Activity Timestamp</th>
-                        </tr>
-                    </thead>
-                    <tbody id="live-table-body">
-                        <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">Loading student data...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- 🌌 FULL SCREEN DATA FLOW ANIMATION SCRIPT -->
-    <script>
-        const canvas = document.getElementById('sync-canvas');
-        const ctx = canvas.getContext('2d');
-
-        let width, height;
-        let particles = [];
-        let dataPackets = [];
-
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-        class Particle {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 0.7;
-                this.vy = (Math.random() - 0.5) * 0.7;
-                this.radius = Math.random() * 2 + 1;
-                this.color = Math.random() > 0.5 ? 'rgba(56, 189, 248,' : 'rgba(16, 185, 129,';
-                this.alpha = Math.random() * 0.6 + 0.3;
-            }
-
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-
-                if (this.x < 0 || this.x > width) this.vx *= -1;
-                if (this.y < 0 || this.y > height) this.vy *= -1;
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `${this.color}${this.alpha})`;
-                ctx.fill();
-            }
-        }
-
-        class DataPacket {
-            constructor(p1, p2) {
-                this.p1 = p1;
-                this.p2 = p2;
-                this.progress = 0;
-                this.speed = Math.random() * 0.02 + 0.012;
-                this.color = Math.random() > 0.5 ? '#38bdf8' : '#34d399';
-            }
-
-            update() {
-                this.progress += this.speed;
-            }
-
-            draw() {
-                const curX = this.p1.x + (this.p2.x - this.p1.x) * this.progress;
-                const curY = this.p1.y + (this.p2.y - this.p1.y) * this.progress;
-
-                ctx.beginPath();
-                ctx.arc(curX, curY, 3, 0, Math.PI * 2);
-                ctx.fillStyle = '#ffffff';
-                ctx.shadowColor = this.color;
-                ctx.shadowBlur = 10;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            }
-        }
-
-        for (let i = 0; i < 60; i++) {
-            particles.push(new Particle());
-        }
-
-        function animateSyncNetwork() {
-            ctx.clearRect(0, 0, width, height);
-
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
-
-                for (let j = i + 1; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-
-                    if (dist < 160) {
-                        const alpha = (1 - dist / 160) * 0.35;
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
-                        ctx.lineWidth = 1;
-                        ctx.stroke();
-
-                        if (Math.random() < 0.002 && dataPackets.length < 25) {
-                            dataPackets.push(new DataPacket(particles[i], particles[j]));
-                        }
-                    }
-                }
-            }
-
-            for (let i = dataPackets.length - 1; i >= 0; i--) {
-                dataPackets[i].update();
-                dataPackets[i].draw();
-                if (dataPackets[i].progress >= 1) {
-                    dataPackets.splice(i, 1);
-                }
-            }
-
-            requestAnimationFrame(animateSyncNetwork);
-        }
-        animateSyncNetwork();
-
-        // ⚡ DASHBOARD & TABS LOGIC
-        let currentAuth = null;
-        let currentTab = 'all';
-        let searchQuery = '';
-        let pollInterval = null;
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const saved = localStorage.getItem('synctally_cloud_auth');
-            if (saved) {
-                try {
-                    currentAuth = JSON.parse(saved);
-                    showDashboard();
-                } catch (e) {
-                    localStorage.removeItem('synctally_cloud_auth');
-                }
-            }
-        });
-
-        async function handlePortalLogin(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btn-login-submit');
-            const errBox = document.getElementById('login-error');
-            const companyCode = document.getElementById('login-company-code').value.trim();
-            const password = document.getElementById('login-password').value.trim();
-
-            btn.disabled = true;
-            btn.innerHTML = "<span>Authenticating...</span>";
-            errBox.style.display = "none";
-
-            try {
-                const res = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        company_code: companyCode,
-                        password: password
-                    })
-                });
-
-                const data = await res.json();
-                if (!res.ok) {
-                    throw new Error(data.error || "Login failed. Please check Company Code & Password.");
-                }
-
-                currentAuth = data;
-                localStorage.setItem('synctally_cloud_auth', JSON.stringify(data));
-                showDashboard();
-            } catch (err) {
-                errBox.textContent = err.message;
-                errBox.style.display = "block";
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = "<span>Access Dashboard</span> <span>&rarr;</span>";
-            }
-        }
-
-        function showDashboard() {
-            document.getElementById('login-view').style.display = 'none';
-            document.getElementById('dashboard-view').style.display = 'block';
-            
-            const badgeIcon = currentAuth.institute_type === 'college' ? '🎓' : '🏫';
-            document.getElementById('nav-company-details').textContent = `${badgeIcon} ${currentAuth.company_name} [${currentAuth.company_code}]`;
-
-            fetchLiveMetrics();
-            if (pollInterval) clearInterval(pollInterval);
-            pollInterval = setInterval(fetchLiveMetrics, 5000);
-        }
-
-        function setTabFilter(tabName) {
-            currentTab = tabName;
-            
-            const tabs = ['all', 's', 'u', 'null', 'l', 'p'];
-            tabs.forEach(t => {
-                const btn = document.getElementById(`tab-btn-${t}`);
-                if (btn) {
-                    if (t === tabName) btn.classList.add('active-tab');
-                    else btn.classList.remove('active-tab');
-                }
-            });
-
-            const cardIds = ['s', 'u', 'null', 'l', 'p'];
-            cardIds.forEach(cid => {
-                const card = document.getElementById(`card-filter-${cid}`);
-                if (card) {
-                    if (cid === tabName) card.classList.add('active-filter-card');
-                    else card.classList.remove('active-filter-card');
-                }
-            });
-
-            fetchLiveMetrics();
-        }
-
-        function handleTableSearch(val) {
-            searchQuery = val.trim();
-            fetchLiveMetrics();
-        }
-
-        async function fetchLiveMetrics() {
-            if (!currentAuth) return;
-            try {
-                const url = `/api/metrics?company_id=${currentAuth.company_id}&institute_type=${currentAuth.institute_type}&tab=${currentTab}&q=${encodeURIComponent(searchQuery)}`;
-                const res = await fetch(url);
-                if (!res.ok) return;
-                const m = await res.json();
-
-                document.getElementById('metric-s').textContent = m.synced_s.toLocaleString();
-                document.getElementById('metric-u').textContent = m.pending_u.toLocaleString();
-                document.getElementById('metric-null').textContent = m.new_null.toLocaleString();
-                document.getElementById('metric-l').textContent = m.left_l.toLocaleString();
-                document.getElementById('metric-p').textContent = m.passout_p.toLocaleString();
-                document.getElementById('metric-total').textContent = m.total_students.toLocaleString();
-
-                document.getElementById('count-tab-all').textContent = m.total_students.toLocaleString();
-                document.getElementById('count-tab-s').textContent = m.synced_s.toLocaleString();
-                document.getElementById('count-tab-u').textContent = m.pending_u.toLocaleString();
-                document.getElementById('count-tab-null').textContent = m.new_null.toLocaleString();
-                document.getElementById('count-tab-l').textContent = m.left_l.toLocaleString();
-                document.getElementById('count-tab-p').textContent = m.passout_p.toLocaleString();
-
-                const pct = m.sync_percentage || 0;
-                document.getElementById('health-pct').textContent = `${pct}% Synced`;
-                document.getElementById('health-fill').style.width = `${pct}%`;
-
-                const tbody = document.getElementById('live-table-body');
-                if (m.student_records && m.student_records.length > 0) {
-                    tbody.innerHTML = m.student_records.map(row => {
-                        let syncBadge = `<span class="tag-pill tag-null">NULL (NEW)</span>`;
-                        if (row.tally_sync === 'S') syncBadge = `<span class="tag-pill tag-s">SYNCED (S)</span>`;
-                        else if (row.tally_sync === 'U') syncBadge = `<span class="tag-pill tag-u">MODIFIED (U)</span>`;
-
-                        let statusBadge = `<span style="color: #64748b; font-weight: 700;">Active</span>`;
-                        if (row.student_status === 'L') statusBadge = `<span class="tag-pill tag-l">LEFT OUT</span>`;
-                        else if (row.student_status === 'P') statusBadge = `<span class="tag-pill tag-passout">PASSED OUT</span>`;
-
-                        return `
-                            <tr>
-                                <td><strong>${row.enrl_no}</strong></td>
-                                <td>${row.student_name || 'N/A'}</td>
-                                <td>${row.class_branch}</td>
-                                <td>${statusBadge}</td>
-                                <td>${syncBadge}</td>
-                                <td style="color: #64748b; font-size: 13px;">${row.activity_time}</td>
-                            </tr>
-                        `;
-                    }).join('');
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">No student records found matching active filter.</td></tr>`;
-                }
-
-            } catch (err) {
-                console.error("Failed to fetch live metrics:", err);
-            }
-        }
-
-        function handleSignOut() {
-            localStorage.removeItem('synctally_cloud_auth');
-            currentAuth = null;
-            if (pollInterval) clearInterval(pollInterval);
-            document.getElementById('dashboard-view').style.display = 'none';
-            document.getElementById('login-view').style.display = 'flex';
-        }
-    </script>
-</body>
-</html>
+            max-width: 100%;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .white-card {
+            background: var(--surface-white);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px -6px rgba(15, 43, 92, 0.08), 0 2px 6px -1px rgba(15, 43, 92, 0.04);
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 28px;
+            margin-bottom: 24px;
+        }
+
+        .brand-box {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-logo-card {
+            background: #ffffff;
+            padding: 4px 10px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-logo-img {
+            max-height: 38px;
+            max-width: 130px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .company-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #e0f2fe;
+            border: 1px solid #bae6fd;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0369a1;
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .btn-signout {
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            color: #e11d48;
+            padding: 9px 20px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-signout:hover {
+            background: #ffe4e6;
+            border-color: #fda4af;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); /* 5 clean equal columns across full width */
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 1280px) {
+            .metrics-grid {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            }
+        }
+
+        .metric-card {
+            padding: 22px 24px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            border: 1.5px solid transparent;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 32px -8px rgba(15, 43, 92, 0.12);
+        }
+
+        .metric-card.active-filter-card {
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+        }
+
+        .card-synced::before { background: var(--synced); }
+        .card-pending::before { background: var(--pending); }
+        .card-new::before { background: var(--new); }
+        .card-left::before { background: var(--left); }
+        .card-passout::before { background: var(--passout); }
+
+        .metric-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .metric-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-badge {
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-synced { background: var(--synced-bg); color: var(--synced); border: 1px solid var(--synced-border); }
+        .badge-pending { background: var(--pending-bg); color: var(--pending); border: 1px solid var(--pending-border); }
+        .badge-new { background: var(--new-bg); color: var(--new); border: 1px solid var(--new-border); }
+        .badge-left { background: var(--left-bg); color: var(--left); border: 1px solid var(--left-border); }
+        .badge-passout { background: var(--passout-bg); color: var(--passout); border: 1px solid var(--passout-border); }
+
+        .metric-value {
+            font-size: 38px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 4px;
+            line-height: 1.1;
+        }
+
+        .metric-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-click-hint {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--brand-primary);
+        }
+
+        .health-banner {
+            padding: 22px 28px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            border: 1px solid #e0f2fe;
+        }
+
+        .health-info h3 {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .health-info p {
+            color: var(--text-sub);
+            font-size: 14px;
+        }
+
+        .progress-box {
+            flex: 1;
+            min-width: 260px;
+            max-width: 480px;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 12px;
+            background: #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #cbd5e1;
+            margin-bottom: 6px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #0284c7);
+            border-radius: 8px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-sub);
+        }
+
+        .table-panel {
+            padding: 26px;
+        }
+
+        .tabs-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 22px;
+            border-bottom: 1.5px solid var(--border-light);
+            padding-bottom: 18px;
+        }
+
+        .tabs-list {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: var(--text-sub);
+            padding: 9px 18px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            background: #e2e8f0;
+            color: var(--text-dark);
+        }
+
+        .tab-btn.active-tab {
+            background: var(--brand-primary);
+            color: #ffffff;
+            border-color: var(--brand-primary);
+            box-shadow: 0 4px 14px -2px rgba(0, 102, 204, 0.4);
+        }
+
+        .tab-count {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .tab-btn.active-tab .tab-count {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+        }
+
+        .search-box {
+            position: relative;
+            min-width: 250px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 14px 10px 36px;
+            background: #f8fafc;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            color: var(--text-dark);
+            font-size: 13px;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            background: #ffffff;
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.12);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .data-table th {
+            padding: 14px 18px;
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: #f8fafc;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1.5px solid var(--border-light);
+        }
+
+        .data-table td {
+            padding: 16px 18px;
+            font-size: 14px;
+            color: var(--text-dark);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .data-table tr:hover td {
+            background: #f8fafc;
+        }
+
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .tag-s { background: var(--synced-bg); color: var(--synced); border: 1px solid var(--synced-border); }
+        .tag-u { background: var(--pending-bg); color: var(--pending); border: 1px solid var(--pending-border); }
+        .tag-null { background: var(--new-bg); color: var(--new); border: 1px solid var(--new-border); }
+        .tag-l { background: var(--left-bg); color: var(--left); border: 1px solid var(--left-border); }
+        .tag-p { background: var(--passout-bg); color: var(--passout); border: 1px solid var(--passout-border); }
+
+        @media (max-width: 1024px) {
+            .form-stage-box {
+                right: 4%;
+                width: 38%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #login-view {
+                background-size: cover;
+                align-items: center;
+                justify-content: center;
+            }
+            .form-stage-box {
+                position: static;
+                transform: none;
+                width: 90%;
+                max-width: 380px;
+                padding: 26px 20px;
+            }
+            .metrics-grid { grid-template-columns: 1fr 1fr; }
+            .navbar { flex-direction: column; gap: 16px; align-items: flex-start; }
+            .health-banner { flex-direction: column; align-items: flex-start; }
+            .tabs-header-bar { flex-direction: column; align-items: flex-start; }
+            .search-box { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 🌌 FULL-SCREEN REALTIME SYNC NETWORK ANIMATION CANVAS -->
+    <canvas id="sync-canvas"></canvas>
+
+    <!-- 🖼️ 1. TRUE 100% FULL-SCREEN LOGIN STAGE -->
+    <div id="login-view">
+        
+        <!-- 🤍 COMPACT, SLEEK FROSTED GLASS LOGIN CARD -->
+        <div class="login-stage-wrapper">
+        <div class="form-stage-box">
+            <div class="login-badge">
+                <span>⚡</span> <span>Enterprise Sync Portal</span>
+            </div>
+
+            <h1 class="login-title">Sign In to Dashboard</h1>
+            <p class="login-subtitle">Enter your Company Code & Password to view live metrics.</p>
+
+            <div id="login-error" class="error-box"></div>
+
+            <form class="login-form" onsubmit="handlePortalLogin(event)">
+                <div class="input-group">
+                    <label>Company</label>
+                    <input type="text" id="login-company-code" class="input-field" placeholder="Enter Company Code" required autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label>Portal Password</label>
+                    <input type="password" id="login-password" class="input-field" placeholder="Enter portal password" required>
+                </div>
+                <button type="submit" id="btn-login-submit" class="btn-submit">
+                    <span>Access Dashboard</span>
+                    <span>&rarr;</span>
+                </button>
+            </form>
+
+            <div class="portal-security-tag">
+                <span>🔒</span> <span>Encrypted Multi-Tenant Gateway</span>
+            </div>
+        </div>
+        </div>
+
+    </div>
+
+    <!-- ☀️ 2. BRIGHT & FRESH ENTERPRISE DASHBOARD VIEW -->
+    <div id="dashboard-view">
+        <div class="container">
+            
+            <!-- Navbar -->
+            <header class="white-card navbar">
+                <div class="brand-box">
+                    <div class="nav-logo-card">
+                        <img src="/logo.png" alt="Logo" class="nav-logo-img" onerror="this.parentElement.style.display='none'">
+                    </div>
+                    <div class="company-pill">
+                        <span class="status-dot"></span>
+                        <span id="nav-company-details">Loading...</span>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn-signout" onclick="handleSignOut()">Switch Company</button>
+                </div>
+            </header>
+
+            <!-- Metrics Cards Grid (Clickable to switch tab) -->
+            <div class="metrics-grid">
+                
+                <!-- Synced (S) -->
+                <div class="white-card metric-card card-synced" onclick="setTabFilter('s')" id="card-filter-s">
+                    <div class="metric-header">
+                        <span class="metric-title">Synced to Tally</span>
+                        <span class="metric-badge badge-synced">STATUS 'S'</span>
+                    </div>
+                    <div class="metric-value" id="metric-s" style="color: var(--synced);">0</div>
+                    <div class="metric-sub">
+                        <span>Fully active & up to date</span>
+                        <span class="card-click-hint">View Tab &rarr;</span>
+                    </div>
+                </div>
+
+                <!-- Pending (U) -->
+                <div class="white-card metric-card card-pending" onclick="setTabFilter('u')" id="card-filter-u">
+                    <div class="metric-header">
+                        <span class="metric-title">Pending Modified</span>
+                        <span class="metric-badge badge-pending">STATUS 'U'</span>
+                    </div>
+                    <div class="metric-value" id="metric-u" style="color: var(--pending);">0</div>
+                    <div class="metric-sub">
+                        <span>Awaiting Tally push</span>
+                        <span class="card-click-hint">View Tab &rarr;</span>
+                    </div>
+                </div>
+
+                <!-- New (NULL) -->
+                <div class="white-card metric-card card-new" onclick="setTabFilter('null')" id="card-filter-null">
+                    <div class="metric-header">
+                        <span class="metric-title">New Admissions</span>
+                        <span class="metric-badge badge-new">STATUS 'NULL'</span>
+                    </div>
+                    <div class="metric-value" id="metric-null" style="color: var(--new);">0</div>
+                    <div class="metric-sub">
+                        <span>Pending ledger creation</span>
+                        <span class="card-click-hint">View Tab &rarr;</span>
+                    </div>
+                </div>
+
+                <!-- Left (L) -->
+                <div class="white-card metric-card card-left" onclick="setTabFilter('l')" id="card-filter-l">
+                    <div class="metric-header">
+                        <span class="metric-title">Left Out Students</span>
+                        <span class="metric-badge badge-left">STATUS 'L'</span>
+                    </div>
+                    <div class="metric-value" id="metric-l" style="color: var(--left);">0</div>
+                    <div class="metric-sub">
+                        <span>Moved to Left Group</span>
+                        <span class="card-click-hint">View Tab &rarr;</span>
+                    </div>
+                </div>
+
+                <!-- Passout (P) -->
+                <div class="white-card metric-card card-passout" onclick="setTabFilter('p')" id="card-filter-p">
+                    <div class="metric-header">
+                        <span class="metric-title">Passed Out</span>
+                        <span class="metric-badge badge-passout">STATUS 'P'</span>
+                    </div>
+                    <div class="metric-value" id="metric-p" style="color: var(--passout);">0</div>
+                    <div class="metric-sub">
+                        <span>Moved to Passout Group</span>
+                        <span class="card-click-hint">View Tab &rarr;</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Health Banner -->
+            <div class="white-card health-banner">
+                <div class="health-info">
+                    <h3>Overall Synchronization Health</h3>
+                    <p>Total Registered Students in Database: <strong id="metric-total" style="color: var(--text-dark);">0</strong></p>
+                </div>
+                <div class="progress-box">
+                    <div class="progress-track">
+                        <div class="progress-fill" id="health-fill" style="width: 0%;"></div>
+                    </div>
+                    <div class="progress-labels">
+                        <span>Reconciliation Rate</span>
+                        <span id="health-pct" style="color: var(--brand-primary);">0% Synced</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🗂️ TABBED STUDENT DATA EXPLORER -->
+            <div class="white-card table-panel">
+                
+                <div class="tabs-header-bar">
+                    <div class="tabs-list">
+                        <button class="tab-btn active-tab" id="tab-btn-all" onclick="setTabFilter('all')">
+                            All Students <span class="tab-count" id="count-tab-all">0</span>
+                        </button>
+                        <button class="tab-btn" id="tab-btn-s" onclick="setTabFilter('s')">
+                            🟢 Synced (S) <span class="tab-count" id="count-tab-s">0</span>
+                        </button>
+                        <button class="tab-btn" id="tab-btn-u" onclick="setTabFilter('u')">
+                            🟡 Pending (U) <span class="tab-count" id="count-tab-u">0</span>
+                        </button>
+                        <button class="tab-btn" id="tab-btn-null" onclick="setTabFilter('null')">
+                            🔵 New (NULL) <span class="tab-count" id="count-tab-null">0</span>
+                        </button>
+                        <button class="tab-btn" id="tab-btn-l" onclick="setTabFilter('l')">
+                            🔴 Left (L) <span class="tab-count" id="count-tab-l">0</span>
+                        </button>
+                        <button class="tab-btn" id="tab-btn-p" onclick="setTabFilter('p')">
+                            🟣 Passout (P) <span class="tab-count" id="count-tab-p">0</span>
+                        </button>
+                    </div>
+
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="table-search-input" class="search-input" placeholder="Search Enrollment or Name..." oninput="handleTableSearch(this.value)">
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Enrollment No</th>
+                            <th>Student Name</th>
+                            <th>Class / Branch</th>
+                            <th>Student Status</th>
+                            <th>Tally Sync Status</th>
+                            <th>Last Activity Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="live-table-body">
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">Loading student data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 🌌 FULL SCREEN DATA FLOW ANIMATION SCRIPT -->
+    <script>
+        const canvas = document.getElementById('sync-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let particles = [];
+        let dataPackets = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.7;
+                this.vy = (Math.random() - 0.5) * 0.7;
+                this.radius = Math.random() * 2 + 1;
+                this.color = Math.random() > 0.5 ? 'rgba(56, 189, 248,' : 'rgba(16, 185, 129,';
+                this.alpha = Math.random() * 0.6 + 0.3;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `${this.color}${this.alpha})`;
+                ctx.fill();
+            }
+        }
+
+        class DataPacket {
+            constructor(p1, p2) {
+                this.p1 = p1;
+                this.p2 = p2;
+                this.progress = 0;
+                this.speed = Math.random() * 0.02 + 0.012;
+                this.color = Math.random() > 0.5 ? '#38bdf8' : '#34d399';
+            }
+
+            update() {
+                this.progress += this.speed;
+            }
+
+            draw() {
+                const curX = this.p1.x + (this.p2.x - this.p1.x) * this.progress;
+                const curY = this.p1.y + (this.p2.y - this.p1.y) * this.progress;
+
+                ctx.beginPath();
+                ctx.arc(curX, curY, 3, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        for (let i = 0; i < 60; i++) {
+            particles.push(new Particle());
+        }
+
+        function animateSyncNetwork() {
+            ctx.clearRect(0, 0, width, height);
+
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 160) {
+                        const alpha = (1 - dist / 160) * 0.35;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+
+                        if (Math.random() < 0.002 && dataPackets.length < 25) {
+                            dataPackets.push(new DataPacket(particles[i], particles[j]));
+                        }
+                    }
+                }
+            }
+
+            for (let i = dataPackets.length - 1; i >= 0; i--) {
+                dataPackets[i].update();
+                dataPackets[i].draw();
+                if (dataPackets[i].progress >= 1) {
+                    dataPackets.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animateSyncNetwork);
+        }
+        animateSyncNetwork();
+
+        // ⚡ DASHBOARD & TABS LOGIC
+        let currentAuth = null;
+        let currentTab = 'all';
+        let searchQuery = '';
+        let pollInterval = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('synctally_cloud_auth');
+            if (saved) {
+                try {
+                    currentAuth = JSON.parse(saved);
+                    showDashboard();
+                } catch (e) {
+                    localStorage.removeItem('synctally_cloud_auth');
+                }
+            }
+        });
+
+        async function handlePortalLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-login-submit');
+            const errBox = document.getElementById('login-error');
+            const companyCode = document.getElementById('login-company-code').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+
+            btn.disabled = true;
+            btn.innerHTML = "<span>Authenticating...</span>";
+            errBox.style.display = "none";
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        company_code: companyCode,
+                        password: password
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || "Login failed. Please check Company Code & Password.");
+                }
+
+                currentAuth = data;
+                localStorage.setItem('synctally_cloud_auth', JSON.stringify(data));
+                showDashboard();
+            } catch (err) {
+                errBox.textContent = err.message;
+                errBox.style.display = "block";
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "<span>Access Dashboard</span> <span>&rarr;</span>";
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('login-view').style.display = 'none';
+            document.getElementById('dashboard-view').style.display = 'block';
+            
+            const badgeIcon = currentAuth.institute_type === 'college' ? '🎓' : '🏫';
+            document.getElementById('nav-company-details').textContent = `${badgeIcon} ${currentAuth.company_name} [${currentAuth.company_code}]`;
+
+            fetchLiveMetrics();
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(fetchLiveMetrics, 5000);
+        }
+
+        function setTabFilter(tabName) {
+            currentTab = tabName;
+            
+            const tabs = ['all', 's', 'u', 'null', 'l', 'p'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                if (btn) {
+                    if (t === tabName) btn.classList.add('active-tab');
+                    else btn.classList.remove('active-tab');
+                }
+            });
+
+            const cardIds = ['s', 'u', 'null', 'l', 'p'];
+            cardIds.forEach(cid => {
+                const card = document.getElementById(`card-filter-${cid}`);
+                if (card) {
+                    if (cid === tabName) card.classList.add('active-filter-card');
+                    else card.classList.remove('active-filter-card');
+                }
+            });
+
+            fetchLiveMetrics();
+        }
+
+        function handleTableSearch(val) {
+            searchQuery = val.trim();
+            fetchLiveMetrics();
+        }
+
+        async function fetchLiveMetrics() {
+            if (!currentAuth) return;
+            try {
+                const url = `/api/metrics?company_id=${currentAuth.company_id}&institute_type=${currentAuth.institute_type}&tab=${currentTab}&q=${encodeURIComponent(searchQuery)}`;
+                const res = await fetch(url);
+                if (!res.ok) return;
+                const m = await res.json();
+
+                document.getElementById('metric-s').textContent = m.synced_s.toLocaleString();
+                document.getElementById('metric-u').textContent = m.pending_u.toLocaleString();
+                document.getElementById('metric-null').textContent = m.new_null.toLocaleString();
+                document.getElementById('metric-l').textContent = m.left_l.toLocaleString();
+                document.getElementById('metric-p').textContent = m.passout_p.toLocaleString();
+                document.getElementById('metric-total').textContent = m.total_students.toLocaleString();
+
+                document.getElementById('count-tab-all').textContent = m.total_students.toLocaleString();
+                document.getElementById('count-tab-s').textContent = m.synced_s.toLocaleString();
+                document.getElementById('count-tab-u').textContent = m.pending_u.toLocaleString();
+                document.getElementById('count-tab-null').textContent = m.new_null.toLocaleString();
+                document.getElementById('count-tab-l').textContent = m.left_l.toLocaleString();
+                document.getElementById('count-tab-p').textContent = m.passout_p.toLocaleString();
+
+                const pct = m.sync_percentage || 0;
+                document.getElementById('health-pct').textContent = `${pct}% Synced`;
+                document.getElementById('health-fill').style.width = `${pct}%`;
+
+                const tbody = document.getElementById('live-table-body');
+                if (m.student_records && m.student_records.length > 0) {
+                    tbody.innerHTML = m.student_records.map(row => {
+                        let syncBadge = `<span class="tag-pill tag-null">NULL (NEW)</span>`;
+                        if (row.tally_sync === 'S') syncBadge = `<span class="tag-pill tag-s">SYNCED (S)</span>`;
+                        else if (row.tally_sync === 'U') syncBadge = `<span class="tag-pill tag-u">MODIFIED (U)</span>`;
+
+                        let statusBadge = `<span style="color: #64748b; font-weight: 700;">Active</span>`;
+                        if (row.student_status === 'L') statusBadge = `<span class="tag-pill tag-l">LEFT OUT</span>`;
+                        else if (row.student_status === 'P') statusBadge = `<span class="tag-pill tag-passout">PASSED OUT</span>`;
+
+                        return `
+                            <tr>
+                                <td><strong>${row.enrl_no}</strong></td>
+                                <td>${row.student_name || 'N/A'}</td>
+                                <td>${row.class_branch}</td>
+                                <td>${statusBadge}</td>
+                                <td>${syncBadge}</td>
+                                <td style="color: #64748b; font-size: 13px;">${row.activity_time}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">No student records found matching active filter.</td></tr>`;
+                }
+
+            } catch (err) {
+                console.error("Failed to fetch live metrics:", err);
+            }
+        }
+
+        function handleSignOut() {
+            localStorage.removeItem('synctally_cloud_auth');
+            currentAuth = null;
+            if (pollInterval) clearInterval(pollInterval);
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('login-view').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
