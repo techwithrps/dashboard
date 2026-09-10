@@ -89,17 +89,16 @@ def handle_login(data):
                     "status": "success",
                     "company_id": row[0],
                     "company_name": row[1],
-                    "company_code": row[2] or f"ID-{row[0]}",
+                    "company_code": row[2] or str(row[0]),
                     "institute_type": inst_type
                 }, 200
-                
         except Exception as e:
             pass
         finally:
             if conn:
                 conn.close()
                 
-    return {"error": f"Company '{code_input}' not found in database. Please check code."}, 404
+    return {"error": f"No active institution found matching '{code_input}' in College or School systems."}, 404
 
 def handle_metrics(params):
     try:
@@ -108,6 +107,7 @@ def handle_metrics(params):
         company_id = 0
         
     institute_type = params.get("institute_type", ["college"])[0].lower()
+    module_tab = params.get("module", ["master"])[0].lower()
     tab_filter = params.get("tab", ["all"])[0].lower()
     search_q = params.get("q", [""])[0].strip().upper()
     
@@ -123,7 +123,7 @@ def handle_metrics(params):
         company_name = c_row[0] if c_row else f"Company ID {company_id}"
         company_code = c_row[1] if c_row else str(company_id)
         
-        # 2. Aggregated Sync Metrics (S, U, NULL, L, P, Total)
+        # 2. Aggregated Master Sync Metrics (S, U, NULL, L, P, Total)
         cur.execute(f"""
             SELECT 
                 SUM(CASE WHEN TALLY_SYNC = 'S' THEN 1 ELSE 0 END) AS SYNCED_S,
@@ -137,47 +137,117 @@ def handle_metrics(params):
         """, {"cid": company_id})
         row = cur.fetchone()
         
-        # 3. Dynamic Filtered Students Query according to Active Tab
-        where_clauses = ["COMPANY_ID = :cid"]
-        sql_params = {"cid": company_id}
-        
-        if tab_filter == "s" or tab_filter == "synced":
-            where_clauses.append("TALLY_SYNC = 'S'")
-        elif tab_filter == "u" or tab_filter == "pending":
-            where_clauses.append("(TALLY_SYNC = 'U' OR TALLY_SYNC = ' ')")
-        elif tab_filter == "null" or tab_filter == "new":
-            where_clauses.append("TALLY_SYNC IS NULL")
-        elif tab_filter == "l" or tab_filter == "left":
-            where_clauses.append("STUDENT_STATUS = 'L'")
-        elif tab_filter == "p" or tab_filter == "passout":
-            where_clauses.append("STUDENT_STATUS = 'P'")
-            
-        if search_q:
-            where_clauses.append("(UPPER(ENRL_NO) LIKE :sq OR UPPER(STUDENT_NAME) LIKE :sq OR UPPER(BRANCH) LIKE :sq)")
-            sql_params["sq"] = f"%{search_q}%"
-            
-        where_sql = " AND ".join(where_clauses)
+        # 3. Financial Totals for Transaction Module (Opening Balance, Due Total, Receipts Total, Net Outstanding)
+        cur.execute(f"""
+            SELECT 
+                NVL(SUM(CASE WHEN INVOICE_TYPE IN ('FE', 'FI') THEN AMOUNT ELSE 0 END), 0) AS TOTAL_DUE,
+                NVL(SUM(CASE WHEN INVOICE_TYPE = 'OB' THEN AMOUNT ELSE 0 END), 0) AS OPENING_BALANCE,
+                NVL(SUM(CASE WHEN INVOICE_TYPE = 'DI' THEN AMOUNT ELSE 0 END), 0) AS TOTAL_DISCOUNT,
+                NVL(SUM(CASE WHEN INVOICE_TYPE = 'AD' THEN AMOUNT ELSE 0 END), 0) AS ADVANCE_ADJUSTED,
+                NVL(SUM(CASE WHEN INVOICE_TYPE = 'REFUND' THEN AMOUNT ELSE 0 END), 0) AS TOTAL_REFUND,
+                NVL(SUM(CASE WHEN INVOICE_TYPE = 'Bounce' THEN AMOUNT ELSE 0 END), 0) AS TOTAL_BOUNCE,
+                COUNT(DISTINCT INVOICE_NO) AS TOTAL_INVOICES
+            FROM {schema}.STUDENT_FEE_DETAILS
+            WHERE COMPANY_ID = :cid
+        """, {"cid": company_id})
+        fee_totals = cur.fetchone()
         
         cur.execute(f"""
-            SELECT ENRL_NO, STUDENT_NAME, BRANCH, STUDENT_STATUS, TALLY_SYNC, 
-                   COALESCE(UPDATED_ON, DATA_UPDATED_DATE, DATA_POSTED_DATE, CREATED_ON) AS ACT_TIME,
-                   STUDENT_ID
-            FROM {schema}.STUDENT_MASTER_DATA
-            WHERE {where_sql}
-            ORDER BY COALESCE(UPDATED_ON, DATA_UPDATED_DATE, DATA_POSTED_DATE, CREATED_ON) DESC NULLS LAST, STUDENT_ID DESC
-            FETCH FIRST 100 ROWS ONLY
-        """, sql_params)
+            SELECT 
+                NVL(SUM(AMOUNT), 0) AS TOTAL_RECEIPTS,
+                COUNT(1) AS TOTAL_PAYMENT_VOUCHERS
+            FROM {schema}.STUDENT_FEE_PAYMENT
+            WHERE COMPANY_ID = :cid
+        """, {"cid": company_id})
+        pay_totals = cur.fetchone()
         
+        total_due_amt = float(fee_totals[0] or 0)
+        total_ob_amt = float(fee_totals[1] or 0)
+        total_discount_amt = float(fee_totals[2] or 0)
+        total_adv_adj_amt = float(fee_totals[3] or 0)
+        total_refund_amt = float(fee_totals[4] or 0)
+        total_bounce_amt = float(fee_totals[5] or 0)
+        total_invoices_count = int(fee_totals[6] or 0)
+        
+        total_receipts_amt = float(pay_totals[0] or 0)
+        total_vouchers_count = int(pay_totals[1] or 0)
+        
+        net_outstanding_balance = (total_due_amt + total_ob_amt + total_refund_amt + total_bounce_amt) - (total_adv_adj_amt + total_discount_amt + total_receipts_amt)
+        
+        # 4. If transaction module requested, fetch recent receipt vouchers
+        transaction_records = []
+        if module_tab == "transaction":
+            where_vouchers = ["COMPANY_ID = :cid"]
+            v_params = {"cid": company_id}
+            if search_q:
+                where_vouchers.append("(UPPER(PAYMENT_NO) LIKE :sq OR UPPER(TRN_ID) LIKE :sq OR UPPER(REMARKS) LIKE :sq)")
+                v_params["sq"] = f"%{search_q}%"
+            where_v_sql = " AND ".join(where_vouchers)
+            
+            cur.execute(f"""
+                SELECT PAYMENT_ID, PAYMENT_NO, TRN_ID, TO_CHAR(PAYMENT_DATE, 'DD/MM/YYYY') AS P_DATE,
+                       AMOUNT, PAYMENT_MODE, TALLY_STATUS, REMARKS,
+                       COALESCE(CREATED_ON, PAYMENT_DATE) AS ACT_TIME
+                FROM {schema}.STUDENT_FEE_PAYMENT
+                WHERE {where_v_sql}
+                ORDER BY PAYMENT_ID DESC
+                FETCH FIRST 100 ROWS ONLY
+            """, v_params)
+            for vr in cur.fetchall():
+                transaction_records.append({
+                    "payment_id": vr[0],
+                    "payment_no": vr[1] or "-",
+                    "trn_id": vr[2] or "-",
+                    "payment_date": vr[3] or "-",
+                    "amount": float(vr[4] or 0),
+                    "payment_mode": str(vr[5] or "Online/Bank"),
+                    "tally_status": vr[6] or "Pending",
+                    "remarks": vr[7] or "-",
+                    "activity_time": str(vr[8]) if vr[8] else "-"
+                })
+        
+        # 5. Dynamic Filtered Students Query for Master Tab
         student_records = []
-        for r in cur.fetchall():
-            student_records.append({
-                "enrl_no": r[0],
-                "student_name": r[1],
-                "class_branch": r[2] or "-",
-                "student_status": r[3] or "Active",
-                "tally_sync": r[4] or "NULL",
-                "activity_time": str(r[5]) if r[5] else "N/A"
-            })
+        if module_tab != "transaction":
+            where_clauses = ["COMPANY_ID = :cid"]
+            sql_params = {"cid": company_id}
+            
+            if tab_filter == "s" or tab_filter == "synced":
+                where_clauses.append("TALLY_SYNC = 'S'")
+            elif tab_filter == "u" or tab_filter == "pending":
+                where_clauses.append("(TALLY_SYNC = 'U' OR TALLY_SYNC = ' ')")
+            elif tab_filter == "null" or tab_filter == "new":
+                where_clauses.append("TALLY_SYNC IS NULL")
+            elif tab_filter == "l" or tab_filter == "left":
+                where_clauses.append("STUDENT_STATUS = 'L'")
+            elif tab_filter == "p" or tab_filter == "passout":
+                where_clauses.append("STUDENT_STATUS = 'P'")
+                
+            if search_q:
+                where_clauses.append("(UPPER(ENRL_NO) LIKE :sq OR UPPER(STUDENT_NAME) LIKE :sq OR UPPER(BRANCH) LIKE :sq)")
+                sql_params["sq"] = f"%{search_q}%"
+                
+            where_sql = " AND ".join(where_clauses)
+            
+            cur.execute(f"""
+                SELECT ENRL_NO, STUDENT_NAME, BRANCH, STUDENT_STATUS, TALLY_SYNC, 
+                       COALESCE(UPDATED_ON, DATA_UPDATED_DATE, DATA_POSTED_DATE, CREATED_ON) AS ACT_TIME,
+                       STUDENT_ID
+                FROM {schema}.STUDENT_MASTER_DATA
+                WHERE {where_sql}
+                ORDER BY COALESCE(UPDATED_ON, DATA_UPDATED_DATE, DATA_POSTED_DATE, CREATED_ON) DESC NULLS LAST, STUDENT_ID DESC
+                FETCH FIRST 100 ROWS ONLY
+            """, sql_params)
+            
+            for r in cur.fetchall():
+                student_records.append({
+                    "enrl_no": r[0],
+                    "student_name": r[1],
+                    "class_branch": r[2] or "-",
+                    "student_status": r[3] or "Active",
+                    "tally_sync": r[4] or "NULL",
+                    "activity_time": str(r[5]) if r[5] else "N/A"
+                })
             
         cur.close()
         
@@ -195,6 +265,7 @@ def handle_metrics(params):
             "company_name": company_name,
             "company_code": company_code,
             "institute_type": institute_type,
+            # Master Sync Counts
             "synced_s": synced,
             "pending_u": pending,
             "new_null": new_null,
@@ -202,7 +273,18 @@ def handle_metrics(params):
             "passout_p": passout_p,
             "total_students": total,
             "sync_percentage": sync_percentage,
-            "student_records": student_records
+            "student_records": student_records,
+            # Transaction & Financial Totals
+            "total_due": total_due_amt,
+            "total_opening_bal": total_ob_amt,
+            "total_receipts": total_receipts_amt,
+            "total_discount": total_discount_amt,
+            "total_advance_adj": total_adv_adj_amt,
+            "total_refund": total_refund_amt,
+            "net_outstanding": net_outstanding_balance,
+            "total_invoices_count": total_invoices_count,
+            "total_vouchers_count": total_vouchers_count,
+            "transaction_records": transaction_records
         }, 200
     except Exception as e:
         return {"error": str(e)}, 500
