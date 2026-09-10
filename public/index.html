@@ -1509,6 +1509,25 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+            /* 💳 TRANSACTION MODULE CARDS & TABLE STYLING */
+        .card-receipts::before { background: #059669; }
+        .card-due::before { background: #d97706; }
+        .card-ob::before { background: #0284c7; }
+        .card-out::before { background: #dc2626; }
+        .card-adv::before { background: #7c3aed; }
+
+        .badge-receipts { background: #d1fae5; color: #059669; border: 1px solid #a7f3d0; }
+        .badge-due { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+        .badge-ob { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; }
+        .badge-out { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+        .badge-adv { background: #ede9fe; color: #7c3aed; border: 1px solid #ddd6fe; }
+
+        .currency-symbol {
+            font-size: 18px;
+            font-weight: 700;
+            margin-right: 2px;
+            opacity: 0.8;
+        }
     </style>
 
 </head>
@@ -1644,6 +1663,278 @@
             </header>
 
             <!-- 🚀 COMING SOON CONTAINER FOR TRANSACTION & ADMIN -->
+            
+            <!-- 💳 TRANSACTION MODULE VIEW (Opening Balance, Due Total, Receipts Total, Net Outstanding) -->
+            <div id="transaction-view" style="display: none;">
+                
+                <!-- Financial KPI Summary Cards -->
+                <div class="metrics-grid">
+                    <!-- Total Receipts -->
+                    <div class="white-card metric-card card-receipts">
+                        <div class="metric-header">
+                            <span class="metric-title">Total Receipts</span>
+                            <span class="metric-badge badge-receipts">COLLECTED</span>
+                        </div>
+                        <div class="metric-value" style="color: #059669;" id="trn-total-receipts">₹0.00</div>
+                        <div class="metric-sub">
+                            <span id="trn-receipts-count">0 Vouchers</span>
+                            <span>Live Bank/Cash</span>
+                        </div>
+                    </div>
+
+                    <!-- Total Due (Invoices) -->
+                    <div class="white-card metric-card card-due">
+                        <div class="metric-header">
+                            <span class="metric-title">Total Fee Due</span>
+                            <span class="metric-badge badge-due">INVOICED</span>
+                        </div>
+                        <div class="metric-value" style="color: #d97706;" id="trn-total-due">₹0.00</div>
+                        <div class="metric-sub">
+                            <span id="trn-due-count">0 Invoices</span>
+                            <span>Debit Demands</span>
+                        </div>
+                    </div>
+
+                    <!-- Opening Balance -->
+                    <div class="white-card metric-card card-ob">
+                        <div class="metric-header">
+                            <span class="metric-title">Opening Balance</span>
+                            <span class="metric-badge badge-ob">CARRIED FWD</span>
+                        </div>
+                        <div class="metric-value" style="color: #0284c7;" id="trn-opening-bal">₹0.00</div>
+                        <div class="metric-sub">
+                            <span>Prior Session</span>
+                            <span>Opening Ledger</span>
+                        </div>
+                    </div>
+
+                    <!-- Advance & Discounts -->
+                    <div class="white-card metric-card card-adv">
+                        <div class="metric-header">
+                            <span class="metric-title">Advance / Discount</span>
+                            <span class="metric-badge badge-adv">ADJUSTED</span>
+                        </div>
+                        <div class="metric-value" style="color: #7c3aed;" id="trn-adv-disc">₹0.00</div>
+                        <div class="metric-sub">
+                            <span id="trn-discount-val">Disc: ₹0.00</span>
+                            <span id="trn-adv-val">Adv: ₹0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Net Outstanding Balance -->
+                    <div class="white-card metric-card card-out">
+                        <div class="metric-header">
+                            <span class="metric-title">Net Outstanding</span>
+                            <span class="metric-badge badge-out">NET BALANCE</span>
+                        </div>
+                        <div class="metric-value" style="color: #dc2626;" id="trn-net-outstanding">₹0.00</div>
+                        <div class="metric-sub">
+                            <span>(OB+Due)-(Rec+Adv+Disc)</span>
+                            <span>Ledger Net</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction Health Banner -->
+                <div class="white-card health-banner" style="margin-bottom: 24px;">
+                    <div class="health-info">
+                        <h3>Fee Reconciliation & Cashflow Health</h3>
+                        <p id="trn-health-desc">Real-time ledger audit across all students and fee payment heads.</p>
+                    </div>
+                    <div class="progress-box">
+                        <div class="progress-track">
+                            <div class="progress-fill" id="trn-health-fill" style="width: 0%; background: linear-gradient(90deg, #059669, #0284c7);"></div>
+                        </div>
+                        <div class="progress-labels">
+                            <span>Fee Collection Ratio</span>
+                            <span id="trn-health-pct">0% Collected</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction Vouchers Table Panel -->
+                <div class="white-card table-panel">
+                    <div class="tabs-header-bar">
+                        <div style="font-weight: 800; font-size: 16px; color: #0b1e42; display: flex; align-items: center; gap: 8px;">
+                            <span>💳</span>
+                            <span>Recent Payment Vouchers & Daybook Transactions</span>
+                        </div>
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" class="search-input" placeholder="Search Voucher No, Txn ID, Remarks..." oninput="handleTrnSearch(this.value)">
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>VOUCHER NO</th>
+                                    <th>TRANSACTION ID</th>
+                                    <th>PAYMENT DATE</th>
+                                    <th>AMOUNT (₹)</th>
+                                    <th>PAYMENT MODE</th>
+                                    <th>TALLY POST STATUS</th>
+                                    <th>REMARKS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trn-table-body">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                        Loading transaction records...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="coming-soon-view" class="coming-soon-stage">
+                <div class="cs-icon-box" id="cs-icon">💳</div>
+                <div class="cs-badge" id="cs-badge">🚀 Feature Under Active Deployment</div>
+                <h2 class="cs-title" id="cs-title">Transaction & Vouchers Module</h2>
+                <p class="cs-desc" id="cs-desc">
+                    Real-time automated Tally Daybook reconciliation, fee receipt vouchers, and payment transaction synchronizations will be available here soon.
+                </p>
+                <button class="nav-module-btn" style="background: var(--brand-primary); color: #fff; padding: 10px 24px;" onclick="switchNavModule('master')">
+                    &larr; Back to Master Dashboard
+                </button>
+            </div>
+
+
+
+            <div id="master-view">
+            </div>
+
+            <!-- 💳 TRANSACTION MODULE VIEW (Opening Balance, Due Total, Receipts Total, Net Outstanding) -->
+            <div id="transaction-view" style="display: none;">
+                
+                <!-- Financial KPI Summary Cards -->
+                <div class="metrics-grid">
+                    <!-- Total Receipts -->
+                    <div class="white-card metric-card card-receipts">
+                        <div class="metric-header">
+                            <span class="metric-title">Total Receipts</span>
+                            <span class="metric-badge badge-receipts">COLLECTED</span>
+                        </div>
+                        <div class="metric-value" style="color: #059669;" id="trn-total-receipts">₹0.00</div>
+                        <div class="metric-sub">
+                            <span id="trn-receipts-count">0 Vouchers</span>
+                            <span>Live Bank/Cash</span>
+                        </div>
+                    </div>
+
+                    <!-- Total Due (Invoices) -->
+                    <div class="white-card metric-card card-due">
+                        <div class="metric-header">
+                            <span class="metric-title">Total Fee Due</span>
+                            <span class="metric-badge badge-due">INVOICED</span>
+                        </div>
+                        <div class="metric-value" style="color: #d97706;" id="trn-total-due">₹0.00</div>
+                        <div class="metric-sub">
+                            <span id="trn-due-count">0 Invoices</span>
+                            <span>Debit Demands</span>
+                        </div>
+                    </div>
+
+                    <!-- Opening Balance -->
+                    <div class="white-card metric-card card-ob">
+                        <div class="metric-header">
+                            <span class="metric-title">Opening Balance</span>
+                            <span class="metric-badge badge-ob">CARRIED FWD</span>
+                        </div>
+                        <div class="metric-value" style="color: #0284c7;" id="trn-opening-bal">₹0.00</div>
+                        <div class="metric-sub">
+                            <span>Prior Session</span>
+                            <span>Opening Ledger</span>
+                        </div>
+                    </div>
+
+                    <!-- Advance & Discounts -->
+                    <div class="white-card metric-card card-adv">
+                        <div class="metric-header">
+                            <span class="metric-title">Advance / Discount</span>
+                            <span class="metric-badge badge-adv">ADJUSTED</span>
+                        </div>
+                        <div class="metric-value" style="color: #7c3aed;" id="trn-adv-disc">₹0.00</div>
+                        <div class="metric-sub">
+                            <span id="trn-discount-val">Disc: ₹0.00</span>
+                            <span id="trn-adv-val">Adv: ₹0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Net Outstanding Balance -->
+                    <div class="white-card metric-card card-out">
+                        <div class="metric-header">
+                            <span class="metric-title">Net Outstanding</span>
+                            <span class="metric-badge badge-out">NET BALANCE</span>
+                        </div>
+                        <div class="metric-value" style="color: #dc2626;" id="trn-net-outstanding">₹0.00</div>
+                        <div class="metric-sub">
+                            <span>(OB+Due)-(Rec+Adv+Disc)</span>
+                            <span>Ledger Net</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction Health Banner -->
+                <div class="white-card health-banner" style="margin-bottom: 24px;">
+                    <div class="health-info">
+                        <h3>Fee Reconciliation & Cashflow Health</h3>
+                        <p id="trn-health-desc">Real-time ledger audit across all students and fee payment heads.</p>
+                    </div>
+                    <div class="progress-box">
+                        <div class="progress-track">
+                            <div class="progress-fill" id="trn-health-fill" style="width: 0%; background: linear-gradient(90deg, #059669, #0284c7);"></div>
+                        </div>
+                        <div class="progress-labels">
+                            <span>Fee Collection Ratio</span>
+                            <span id="trn-health-pct">0% Collected</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction Vouchers Table Panel -->
+                <div class="white-card table-panel">
+                    <div class="tabs-header-bar">
+                        <div style="font-weight: 800; font-size: 16px; color: #0b1e42; display: flex; align-items: center; gap: 8px;">
+                            <span>💳</span>
+                            <span>Recent Payment Vouchers & Daybook Transactions</span>
+                        </div>
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" class="search-input" placeholder="Search Voucher No, Txn ID, Remarks..." oninput="handleTrnSearch(this.value)">
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>VOUCHER NO</th>
+                                    <th>TRANSACTION ID</th>
+                                    <th>PAYMENT DATE</th>
+                                    <th>AMOUNT (₹)</th>
+                                    <th>PAYMENT MODE</th>
+                                    <th>TALLY POST STATUS</th>
+                                    <th>REMARKS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trn-table-body">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                        Loading transaction records...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
             <div id="coming-soon-view" class="coming-soon-stage">
                 <div class="cs-icon-box" id="cs-icon">💳</div>
                 <div class="cs-badge" id="cs-badge">🚀 Feature Under Active Deployment</div>
@@ -2279,6 +2570,9 @@
 
         
         let currentNavModule = 'master';
+        let trnSearchQuery = '';
+        let trnSearchDebounce = null;
+
         function switchNavModule(moduleName) {
             currentNavModule = moduleName;
             const mods = ['master', 'transaction', 'admin'];
@@ -2290,37 +2584,119 @@
                 }
             });
 
-            const metricsGrid = document.querySelector('.metrics-grid');
-            const healthBanner = document.querySelector('.health-banner');
-            const tablePanel = document.querySelector('.table-panel');
+            const masterView = document.getElementById('master-view');
+            const trnView = document.getElementById('transaction-view');
             const csView = document.getElementById('coming-soon-view');
 
             if (moduleName === 'master') {
                 if (csView) csView.style.display = 'none';
-                if (metricsGrid) metricsGrid.style.display = 'grid';
-                if (healthBanner) healthBanner.style.display = 'flex';
-                if (tablePanel) tablePanel.style.display = 'block';
+                if (trnView) trnView.style.display = 'none';
+                if (masterView) masterView.style.display = 'block';
                 fetchLiveMetrics(false);
             } else if (moduleName === 'transaction') {
-                if (metricsGrid) metricsGrid.style.display = 'none';
-                if (healthBanner) healthBanner.style.display = 'none';
-                if (tablePanel) tablePanel.style.display = 'none';
-                if (csView) {
-                    csView.style.display = 'flex';
-                    document.getElementById('cs-icon').textContent = '💳';
-                    document.getElementById('cs-title').textContent = 'Transaction & Vouchers Module';
-                    document.getElementById('cs-desc').textContent = 'Real-time automated Tally Daybook reconciliation, fee receipt vouchers, and payment transaction synchronizations are coming soon in the next update.';
-                }
+                if (masterView) masterView.style.display = 'none';
+                if (csView) csView.style.display = 'none';
+                if (trnView) trnView.style.display = 'block';
+                fetchTransactionMetrics(false);
             } else if (moduleName === 'admin') {
-                if (metricsGrid) metricsGrid.style.display = 'none';
-                if (healthBanner) healthBanner.style.display = 'none';
-                if (tablePanel) tablePanel.style.display = 'none';
+                if (masterView) masterView.style.display = 'none';
+                if (trnView) trnView.style.display = 'none';
                 if (csView) {
                     csView.style.display = 'flex';
                     document.getElementById('cs-icon').textContent = '⚙️';
                     document.getElementById('cs-title').textContent = 'Administration & Node Controls';
                     document.getElementById('cs-desc').textContent = 'Multi-tenant database configuration, remote Tally endpoint routing, audit log monitoring, and automated cron maintenance settings are coming soon.';
                 }
+            }
+        }
+
+        function handleTrnSearch(val) {
+            trnSearchQuery = val.trim();
+            clearTimeout(trnSearchDebounce);
+            const tbody = document.getElementById('trn-table-body');
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="padding: 35px 0; text-align: center;">
+                            <div class="table-loading-overlay">
+                                <div class="loading-spinner"></div>
+                                <span style="margin-top: 8px; font-weight: 700; color: #0284c7;">Searching transactions...</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+            trnSearchDebounce = setTimeout(() => {
+                fetchTransactionMetrics(false);
+            }, 300);
+        }
+
+        async function fetchTransactionMetrics(isSilent = false) {
+            if (!currentAuth) return;
+            try {
+                const url = `/api/metrics?company_id=${currentAuth.company_id}&institute_type=${currentAuth.institute_type}&module=transaction&q=${encodeURIComponent(trnSearchQuery)}`;
+                const res = await fetch(url);
+                if (!res.ok) return;
+                const m = await res.json();
+
+                const fmtCurr = (num) => '₹' + Number(num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                document.getElementById('trn-total-receipts').textContent = fmtCurr(m.total_receipts);
+                document.getElementById('trn-receipts-count').textContent = `${(m.total_vouchers_count || 0).toLocaleString()} Vouchers`;
+
+                document.getElementById('trn-total-due').textContent = fmtCurr(m.total_due);
+                document.getElementById('trn-due-count').textContent = `${(m.total_invoices_count || 0).toLocaleString()} Invoices`;
+
+                document.getElementById('trn-opening-bal').textContent = fmtCurr(m.total_opening_bal);
+                
+                const advDiscTotal = (m.total_advance_adj || 0) + (m.total_discount || 0);
+                document.getElementById('trn-adv-disc').textContent = fmtCurr(advDiscTotal);
+                document.getElementById('trn-discount-val').textContent = `Disc: ${fmtCurr(m.total_discount)}`;
+                document.getElementById('trn-adv-val').textContent = `Adv: ${fmtCurr(m.total_advance_adj)}`;
+
+                document.getElementById('trn-net-outstanding').textContent = fmtCurr(m.net_outstanding);
+
+                // Collection percentage
+                const dueBasis = (m.total_due || 0) + (m.total_opening_bal || 0);
+                let colPct = dueBasis > 0 ? Math.min(100, Math.round((m.total_receipts / dueBasis) * 100)) : 100;
+                document.getElementById('trn-health-pct').textContent = `${colPct}% Collected`;
+                document.getElementById('trn-health-fill').style.width = `${colPct}%`;
+
+                // Render Table Vouchers
+                const tbody = document.getElementById('trn-table-body');
+                if (tbody) {
+                    if (m.transaction_records && m.transaction_records.length > 0) {
+                        tbody.innerHTML = m.transaction_records.map(r => {
+                            let tallyBadge = `<span class="tag-pill tag-s">POSTED (Y)</span>`;
+                            if (!r.tally_status || r.tally_status === 'Pending') {
+                                tallyBadge = `<span class="tag-pill tag-u">PENDING</span>`;
+                            }
+                            return `
+                                <tr>
+                                    <td class="cell-primary font-mono font-bold">${r.payment_no}</td>
+                                    <td class="cell-secondary font-mono">${r.trn_id}</td>
+                                    <td class="font-bold">${r.payment_date}</td>
+                                    <td style="font-weight: 800; color: #059669;">${fmtCurr(r.amount)}</td>
+                                    <td><span class="tag-pill tag-null">${r.payment_mode}</span></td>
+                                    <td>${tallyBadge}</td>
+                                    <td class="cell-secondary">${r.remarks}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    } else {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="7">
+                                    <div class="table-empty-box">
+                                        No transaction payment vouchers found.
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to fetch transaction metrics:", e);
             }
         }
 
