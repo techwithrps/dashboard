@@ -191,7 +191,7 @@ def handle_metrics(params):
                     INVOICE_NO,
                     SUM(NVL(AMOUNT, 0)) AS RECEIPT
                   FROM {schema}.STUDENT_FEE_PAYMENT_DTLS
-                  WHERE COMPANY_ID = :cid AND REMARKS NOT IN ('Advance')
+                  WHERE REMARKS NOT IN ('Advance')
                   GROUP BY INVOICE_NO
                 ),
                 OPENING_BAL AS (
@@ -206,11 +206,7 @@ def handle_metrics(params):
                   GROUP BY FD.ENRL_NO
                 )
                 SELECT NVL(SUM(OB.OPENING_AMOUNT), 0)
-                FROM {schema}.STUDENT_MASTER_DATA SM
-                JOIN OPENING_BAL OB ON OB.ENRL_NO = SM.ENRL_NO
-                WHERE SM.COMPANY_ID = :cid
-                  AND SM.STUDENT_STATUS IS NULL
-                  AND SM.ACTIVE_STATUS_ID = 1
+                FROM OPENING_BAL OB
             """, {"cid": company_id})
             sp_ob_row = cur.fetchone()
             if sp_ob_row and sp_ob_row[0] is not None:
