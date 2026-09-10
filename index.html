@@ -2278,6 +2278,7 @@
 
     <script>
 
+
         const canvas = document.getElementById('sync-canvas');
 
         const ctx = canvas.getContext('2d');
@@ -2612,111 +2613,7 @@
 
         }
 
-
-
         let fetchController = null;
-        let searchDebounceTimer = null;
-
-        
-        let currentNavModule = 'master';
-        let trnSearchQuery = '';
-        let trnSearchDebounce = null;
-
-        function switchNavModule(moduleName) {
-            currentNavModule = moduleName;
-            const mods = ['master', 'transaction', 'admin'];
-            mods.forEach(m => {
-                const btn = document.getElementById(`nav-mod-${m}`);
-                if (btn) {
-                    if (m === moduleName) btn.classList.add('active-module');
-                    else btn.classList.remove('active-module');
-                }
-            });
-
-            const masterView = document.getElementById('master-view');
-            const trnView = document.getElementById('transaction-view');
-            const csView = document.getElementById('coming-soon-view');
-
-            if (moduleName === 'master') {
-                if (csView) csView.style.display = 'none';
-                if (trnView) trnView.style.display = 'none';
-                if (masterView) masterView.style.display = 'block';
-                fetchLiveMetrics(false);
-            } else if (moduleName === 'transaction') {
-                if (masterView) masterView.style.display = 'none';
-                if (csView) csView.style.display = 'none';
-                if (trnView) trnView.style.display = 'block';
-                fetchTransactionMetrics(false);
-            } else if (moduleName === 'admin') {
-                if (masterView) masterView.style.display = 'none';
-                if (trnView) trnView.style.display = 'none';
-                if (csView) {
-                    csView.style.display = 'flex';
-                    document.getElementById('cs-icon').textContent = '⚙️';
-                    document.getElementById('cs-title').textContent = 'Administration & Node Controls';
-                    document.getElementById('cs-desc').textContent = 'Multi-tenant database configuration, remote Tally endpoint routing, audit log monitoring, and automated cron maintenance settings are coming soon.';
-                }
-            }
-        }
-
-        function handleTrnSearch(val) {
-            trnSearchQuery = val.trim();
-            clearTimeout(trnSearchDebounce);
-            const tbody = document.getElementById('trn-table-body');
-            if (tbody) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" style="padding: 35px 0; text-align: center;">
-                            <div class="table-loading-overlay">
-                                <div class="loading-spinner"></div>
-                                <span style="margin-top: 8px; font-weight: 700; color: #0284c7;">Searching transactions...</span>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }
-            trnSearchDebounce = setTimeout(() => {
-                fetchTransactionMetrics(false);
-            }, 300);
-        }
-
-        async function fetchTransactionMetrics(isSilent = false) {
-            if (!currentAuth) return;
-            try {
-                const url = `/api/metrics?company_id=${currentAuth.company_id}&institute_type=${currentAuth.institute_type}&module=transaction`;
-                const res = await fetch(url);
-                if (!res.ok) return;
-                const m = await res.json();
-
-                const fmtCurr = (num) => '₹' + Number(num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-                document.getElementById('trn-total-receipts').textContent = fmtCurr(m.total_receipts);
-                document.getElementById('trn-receipts-count').textContent = `${(m.total_vouchers_count || 0).toLocaleString()} Vouchers`;
-
-                document.getElementById('trn-total-due').textContent = fmtCurr(m.total_due);
-                document.getElementById('trn-due-count').textContent = `${(m.total_invoices_count || 0).toLocaleString()} Invoices`;
-
-                document.getElementById('trn-opening-bal').textContent = fmtCurr(m.total_opening_bal);
-            } catch (e) {
-                console.error("Failed to fetch transaction metrics:", e);
-            }
-        }
-
-        function handleSignOut() {
-            localStorage.removeItem('synctally_cloud_auth');
-            currentAuth = null;
-            if (pollInterval) clearInterval(pollInterval);
-            document.body.classList.remove('dashboard-active');
-            document.body.classList.add('login-active');
-            document.getElementById('dashboard-view').style.display = 'none';
-            document.getElementById('login-view').style.display = 'flex';
-        }
-        </script>
-
-</body>
-
-</html>
-let fetchController = null;
         let searchDebounceTimer = null;
 
         function showDashboard() {
@@ -2889,4 +2786,6 @@ let fetchController = null;
             document.getElementById('dashboard-view').style.display = 'none';
             document.getElementById('login-view').style.display = 'flex';
         }
-        
+    </script>
+</body>
+</html>
