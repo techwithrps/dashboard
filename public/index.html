@@ -2716,4 +2716,177 @@
 </body>
 
 </html>
+let fetchController = null;
+        let searchDebounceTimer = null;
 
+        function showDashboard() {
+            document.body.classList.remove('login-active');
+            document.body.classList.add('dashboard-active');
+
+            document.getElementById('login-view').style.display = 'none';
+            document.getElementById('dashboard-view').style.display = 'block';
+            
+            const badgeIcon = currentAuth.institute_type === 'college' ? '🎓' : '🏫';
+            document.getElementById('nav-company-details').textContent = `${badgeIcon} ${currentAuth.company_name} [${currentAuth.company_code}]`;
+
+            fetchLiveMetrics(false);
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(() => fetchLiveMetrics(true), 6000);
+        }
+
+        function setTabFilter(tabName) {
+            if (currentTab === tabName) return;
+            currentTab = tabName;
+            
+            const tabs = ['all', 's', 'u', 'null', 'l', 'p'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                if (btn) {
+                    if (t === tabName) btn.classList.add('active-tab');
+                    else btn.classList.remove('active-tab');
+                }
+            });
+
+            const cardIds = ['s', 'u', 'null', 'l', 'p'];
+            cardIds.forEach(cid => {
+                const card = document.getElementById(`card-filter-${cid}`);
+                if (card) {
+                    if (cid === tabName) card.classList.add('active-filter-card');
+                    else card.classList.remove('active-filter-card');
+                }
+            });
+
+            // Instant Loading Indicator inside Table on Tab Switch
+            const tbody = document.getElementById('live-table-body');
+            if (tbody) {
+                const tabTitles = {
+                    'all': 'All Registered Students',
+                    's': 'Synced to Tally (S)',
+                    'u': 'Pending Modified (U)',
+                    'null': 'New Admissions (NULL)',
+                    'l': 'Left Out Students (L)',
+                    'p': 'Passed Out Students (P)'
+                };
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="padding: 45px 0;">
+                            <div class="table-loading-overlay">
+                                <div class="loading-spinner"></div>
+                                <span style="margin-top: 8px; font-weight: 700; color: #0284c7; font-size: 14px;">Loading ${tabTitles[tabName] || tabName.toUpperCase()} records...</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            fetchLiveMetrics(false);
+        }
+
+        function handleTableSearch(val) {
+            searchQuery = val.trim();
+            clearTimeout(searchDebounceTimer);
+            
+            const tbody = document.getElementById('live-table-body');
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="padding: 45px 0;">
+                            <div class="table-loading-overlay">
+                                <div class="loading-spinner"></div>
+                                <span style="margin-top: 8px; font-weight: 700; color: #0284c7; font-size: 14px;">Searching records...</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            searchDebounceTimer = setTimeout(() => {
+                fetchLiveMetrics(false);
+            }, 300);
+        }
+
+        async function fetchLiveMetrics(isSilent = false) {
+            if (!currentAuth) return;
+            
+            if (fetchController) {
+                fetchController.abort();
+            }
+            fetchController = new AbortController();
+
+            try {
+                const url = `/api/metrics?company_id=${currentAuth.company_id}&institute_type=${currentAuth.institute_type}&tab=${currentTab}&q=${encodeURIComponent(searchQuery)}`;
+                const res = await fetch(url, { signal: fetchController.signal });
+                if (!res.ok) return;
+                const m = await res.json();
+
+                document.getElementById('metric-s').textContent = (m.synced_s || 0).toLocaleString();
+                document.getElementById('metric-u').textContent = (m.pending_u || 0).toLocaleString();
+                document.getElementById('metric-null').textContent = (m.new_null || 0).toLocaleString();
+                document.getElementById('metric-l').textContent = (m.left_l || 0).toLocaleString();
+                document.getElementById('metric-p').textContent = (m.passout_p || 0).toLocaleString();
+                document.getElementById('metric-total').textContent = (m.total_students || 0).toLocaleString();
+
+                document.getElementById('count-tab-all').textContent = (m.total_students || 0).toLocaleString();
+                document.getElementById('count-tab-s').textContent = (m.synced_s || 0).toLocaleString();
+                document.getElementById('count-tab-u').textContent = (m.pending_u || 0).toLocaleString();
+                document.getElementById('count-tab-null').textContent = (m.new_null || 0).toLocaleString();
+                document.getElementById('count-tab-l').textContent = (m.left_l || 0).toLocaleString();
+                document.getElementById('count-tab-p').textContent = (m.passout_p || 0).toLocaleString();
+
+                const pct = m.sync_percentage || 0;
+                document.getElementById('health-pct').textContent = `${pct}% Synced`;
+                document.getElementById('health-fill').style.width = `${pct}%`;
+
+                const tbody = document.getElementById('live-table-body');
+                if (tbody) {
+                    if (m.student_records && m.student_records.length > 0) {
+                        tbody.innerHTML = m.student_records.map(row => {
+                            let syncBadge = `<span class="tag-pill tag-null">NULL (NEW)</span>`;
+                            if (row.tally_sync === 'S') syncBadge = `<span class="tag-pill tag-s">SYNCED (S)</span>`;
+                            else if (row.tally_sync === 'U') syncBadge = `<span class="tag-pill tag-u">MODIFIED (U)</span>`;
+
+                            let statusBadge = `<span style="color: #64748b; font-weight: 700;">Active</span>`;
+                            if (row.is_left) {
+                                if (row.status === 'P') statusBadge = `<span class="tag-pill tag-p">Passed Out</span>`;
+                                else statusBadge = `<span class="tag-pill tag-l">Left</span>`;
+                            }
+
+                            return `
+                                <tr>
+                                    <td class="cell-primary font-mono">${row.enrollment_no || '-'}</td>
+                                    <td class="font-bold">${row.student_name || '-'}</td>
+                                    <td class="cell-secondary">${row.student_class || '-'}</td>
+                                    <td>${statusBadge}</td>
+                                    <td>${syncBadge}</td>
+                                    <td class="cell-secondary font-mono">${row.last_active || '-'}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    } else {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="6">
+                                    <div class="table-empty-box">
+                                        No student records found for this category or search query.
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                }
+            } catch (err) {
+                if (err.name === 'AbortError') return;
+                console.error("Failed to fetch live metrics:", err);
+            }
+        }
+
+        function handleSignOut() {
+            localStorage.removeItem('synctally_cloud_auth');
+            currentAuth = null;
+            if (pollInterval) clearInterval(pollInterval);
+            document.body.classList.remove('dashboard-active');
+            document.body.classList.add('login-active');
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('login-view').style.display = 'flex';
+        }
+        
