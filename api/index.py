@@ -137,11 +137,11 @@ def handle_metrics(params):
         """, {"cid": company_id})
         row = cur.fetchone()
         
-        # 3. Financial Totals for Transaction Module (Opening Balance, Due Total, Receipts Total, Net Outstanding)
+        # 3. Financial Totals for Transaction Module (Exact SP_SCHOOL_OUTSTANDING_ha ERP Formula)
         cur.execute(f"""
             SELECT 
                 NVL(SUM(CASE WHEN INVOICE_TYPE IN ('FE', 'FI') THEN AMOUNT ELSE 0 END), 0) AS TOTAL_DUE,
-                NVL(SUM(CASE WHEN INVOICE_TYPE = 'OB' THEN AMOUNT ELSE 0 END), 0) AS OPENING_BALANCE,
+                NVL(SUM(CASE WHEN INVOICE_TYPE = 'OB' THEN AMOUNT ELSE 0 END), 0) AS RAW_OB,
                 NVL(SUM(CASE WHEN INVOICE_TYPE = 'DI' THEN AMOUNT ELSE 0 END), 0) AS TOTAL_DISCOUNT,
                 NVL(SUM(CASE WHEN INVOICE_TYPE = 'AD' THEN AMOUNT ELSE 0 END), 0) AS ADVANCE_ADJUSTED,
                 NVL(SUM(CASE WHEN INVOICE_TYPE = 'REFUND' THEN AMOUNT ELSE 0 END), 0) AS TOTAL_REFUND,
@@ -160,9 +160,9 @@ def handle_metrics(params):
             WHERE COMPANY_ID = :cid
         """, {"cid": company_id})
         pay_totals = cur.fetchone()
-        
+
         total_due_amt = float(fee_totals[0] or 0)
-        total_ob_amt = float(fee_totals[1] or 0)
+        raw_ob_amt = float(fee_totals[1] or 0)
         total_discount_amt = float(fee_totals[2] or 0)
         total_adv_adj_amt = float(fee_totals[3] or 0)
         total_refund_amt = float(fee_totals[4] or 0)
@@ -171,6 +171,55 @@ def handle_metrics(params):
         
         total_receipts_amt = float(pay_totals[0] or 0)
         total_vouchers_count = int(pay_totals[1] or 0)
+
+        # Calculate exact Opening Balance using ERP Session Start Cutoff (01/04 of current fiscal year)
+        total_ob_amt = raw_ob_amt
+        try:
+            cur.execute(f"""
+                WITH DistinctFD AS (
+                  SELECT DISTINCT
+                    ENRL_NO,
+                    INVOICE_NO,
+                    INVOICE_TYPE,
+                    INVOICE_DATE,
+                    AMOUNT
+                  FROM {schema}.STUDENT_FEE_DETAILS
+                  WHERE COMPANY_ID = :cid
+                ),
+                PaymentTotal AS (
+                  SELECT
+                    INVOICE_NO,
+                    SUM(NVL(AMOUNT, 0)) AS RECEIPT
+                  FROM {schema}.STUDENT_FEE_PAYMENT_DTLS
+                  WHERE COMPANY_ID = :cid AND REMARKS NOT IN ('Advance')
+                  GROUP BY INVOICE_NO
+                ),
+                OPENING_BAL AS (
+                  SELECT
+                    FD.ENRL_NO,
+                    SUM(CASE WHEN FD.INVOICE_TYPE IN ('FE', 'OB', 'Bounce', 'REFUND') THEN NVL(FD.AMOUNT, 0) ELSE 0 END)
+                    - SUM(CASE WHEN FD.INVOICE_TYPE IN ('DI', 'AD') THEN NVL(FD.AMOUNT, 0) ELSE 0 END)
+                    - SUM(NVL(P.RECEIPT, 0)) AS OPENING_AMOUNT
+                  FROM DistinctFD FD
+                  LEFT JOIN PaymentTotal P ON FD.INVOICE_NO = P.INVOICE_NO
+                  WHERE FD.INVOICE_DATE < TO_DATE('01/04/2026', 'DD/MM/YYYY')
+                  GROUP BY FD.ENRL_NO
+                )
+                SELECT NVL(SUM(OB.OPENING_AMOUNT), 0)
+                FROM {schema}.STUDENT_MASTER_DATA SM
+                JOIN OPENING_BAL OB ON OB.ENRL_NO = SM.ENRL_NO
+                WHERE SM.COMPANY_ID = :cid
+                  AND SM.STUDENT_STATUS IS NULL
+                  AND SM.ACTIVE_STATUS_ID = 1
+            """, {"cid": company_id})
+            sp_ob_row = cur.fetchone()
+            if sp_ob_row and sp_ob_row[0] is not None:
+                calc_val = float(sp_ob_row[0])
+                if calc_val != 0 or total_ob_amt == 0:
+                    total_ob_amt = calc_val
+        except Exception as ob_err:
+            # Fallback to raw_ob_amt if prior period calculation is unavailable
+            pass
         
         net_outstanding_balance = (total_due_amt + total_ob_amt + total_refund_amt + total_bounce_amt) - (total_adv_adj_amt + total_discount_amt + total_receipts_amt)
         
