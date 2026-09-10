@@ -5240,7 +5240,13 @@
 
             fetchLiveMetrics(false);
             if (pollInterval) clearInterval(pollInterval);
-            pollInterval = setInterval(() => fetchLiveMetrics(true), 6000);
+            pollInterval = setInterval(() => {
+                if (currentNavModule === 'master') {
+                    fetchLiveMetrics(true);
+                } else if (currentNavModule === 'transaction') {
+                    fetchTransactionMetrics(true);
+                }
+            }, 6000);
         }
 
         function setTabFilter(tabName) {
@@ -5386,6 +5392,124 @@
             } catch (err) {
                 if (err.name === 'AbortError') return;
                 console.error("Failed to fetch live metrics:", err);
+            }
+        }
+
+                let currentNavModule = 'master';
+        let trnSearchQuery = '';
+        let trnSearchDebounce = null;
+
+        function switchNavModule(moduleName) {
+            console.log("Switching to module:", moduleName);
+            currentNavModule = moduleName;
+            const mods = ['master', 'transaction', 'admin'];
+            mods.forEach(m => {
+                const btn = document.getElementById(`nav-mod-${m}`);
+                if (btn) {
+                    if (m === moduleName) btn.classList.add('active-module');
+                    else btn.classList.remove('active-module');
+                }
+            });
+
+            const masterView = document.getElementById('master-view');
+            const trnView = document.getElementById('transaction-view');
+            const csView = document.getElementById('coming-soon-view');
+
+            if (moduleName === 'master') {
+                if (csView) csView.style.display = 'none';
+                if (trnView) trnView.style.display = 'none';
+                if (masterView) masterView.style.display = 'block';
+                fetchLiveMetrics(false);
+            } else if (moduleName === 'transaction') {
+                if (masterView) masterView.style.display = 'none';
+                if (csView) csView.style.display = 'none';
+                if (trnView) trnView.style.display = 'block';
+                fetchTransactionMetrics(false);
+            } else if (moduleName === 'admin') {
+                if (masterView) masterView.style.display = 'none';
+                if (trnView) trnView.style.display = 'none';
+                if (csView) {
+                    csView.style.display = 'flex';
+                    const elTitle = document.getElementById('cs-module-title');
+                    if (elTitle) elTitle.textContent = 'Administration Module';
+                    const elDesc = document.getElementById('cs-module-desc');
+                    if (elDesc) elDesc.textContent = 'System roles, user access, and enterprise configurations.';
+                }
+            }
+        }
+
+        function handleTrnSearch(val) {
+            trnSearchQuery = val.trim();
+            clearTimeout(trnSearchDebounce);
+            const tbody = document.getElementById('trn-table-body');
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="padding: 40px 0;">
+                            <div class="table-loading-overlay">
+                                <div class="loading-spinner"></div>
+                                <span style="margin-top: 8px; font-weight: 700; color: #0284c7;">Searching transactions...</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+            trnSearchDebounce = setTimeout(() => {
+                fetchTransactionMetrics(false);
+            }, 300);
+        }
+
+        async function fetchTransactionMetrics(isSilent = false) {
+            if (!currentAuth) return;
+            try {
+                const url = `/api/metrics?company_id=${currentAuth.company_id}&institute_type=${currentAuth.institute_type}&module=transaction&q=${encodeURIComponent(trnSearchQuery)}`;
+                const res = await fetch(url);
+                if (!res.ok) return;
+                const m = await res.json();
+
+                const fmtCurr = (num) => '₹ ' + Number(num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                const elRcpt = document.getElementById('trn-total-receipts');
+                if (elRcpt) elRcpt.textContent = fmtCurr(m.total_receipts);
+                const elRcptCnt = document.getElementById('trn-receipts-count');
+                if (elRcptCnt) elRcptCnt.textContent = `${(m.total_vouchers_count || 0).toLocaleString()} Vouchers`;
+
+                const elDue = document.getElementById('trn-total-due');
+                if (elDue) elDue.textContent = fmtCurr(m.total_due);
+                const elDueCnt = document.getElementById('trn-due-count');
+                if (elDueCnt) elDueCnt.textContent = `${(m.total_invoices_count || 0).toLocaleString()} Invoices`;
+
+                const elOpn = document.getElementById('trn-opening-bal');
+                if (elOpn) elOpn.textContent = fmtCurr(m.total_opening_bal);
+
+                const tbody = document.getElementById('trn-table-body');
+                if (tbody && m.transaction_records) {
+                    if (m.transaction_records.length > 0) {
+                        tbody.innerHTML = m.transaction_records.map(r => `
+                            <tr>
+                                <td class="cell-primary font-mono">${r.payment_no || r.payment_id || '-'}</td>
+                                <td class="cell-secondary font-mono">${r.trn_id || '-'}</td>
+                                <td>${r.payment_date || '-'}</td>
+                                <td class="font-bold font-mono" style="color: #059669;">₹ ${Number(r.amount || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                                <td><span class="tag-pill tag-s">${r.payment_mode || 'Online'}</span></td>
+                                <td><span class="tag-pill tag-null">${r.tally_status || 'Pending'}</span></td>
+                                <td class="cell-secondary font-mono">${r.activity_time || '-'}</td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="7">
+                                    <div class="table-empty-box">
+                                        No transaction vouchers found for this period.
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to fetch transaction metrics:", e);
             }
         }
 
