@@ -1664,6 +1664,55 @@
 
             <!-- 🚀 COMING SOON CONTAINER FOR TRANSACTION & ADMIN -->
             
+            <!-- 💳 TRANSACTION MODULE VIEW (Exact 3 Cards: TOTAL RECEIPTS, TOTAL FEE DUE, OPENING BALANCE) -->
+            <div id="transaction-view" style="display: none;">
+                
+                <!-- Financial KPI Summary Cards (Clean 3-Card Grid) -->
+                <div class="metrics-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 28px;">
+                    <!-- Total Receipts -->
+                    <div class="white-card metric-card card-receipts">
+                        <div class="metric-header">
+                            <span class="metric-title">TOTAL RECEIPTS</span>
+                            <span class="metric-badge badge-receipts">COLLECTED</span>
+                        </div>
+                        <div class="metric-value" style="color: #059669;" id="trn-total-receipts">₹0.00</div>
+                        <div class="metric-sub">
+                            <span id="trn-receipts-count">0 Vouchers</span>
+                            <span>Live Bank/Cash</span>
+                        </div>
+                    </div>
+
+                    <!-- Total Fee Due (Invoices) -->
+                    <div class="white-card metric-card card-due">
+                        <div class="metric-header">
+                            <span class="metric-title">TOTAL FEE DUE</span>
+                            <span class="metric-badge badge-due">INVOICED</span>
+                        </div>
+                        <div class="metric-value" style="color: #d97706;" id="trn-total-due">₹0.00</div>
+                        <div class="metric-sub">
+                            <span id="trn-due-count">0 Invoices</span>
+                            <span>Debit Demands</span>
+                        </div>
+                    </div>
+
+                    <!-- Opening Balance -->
+                    <div class="white-card metric-card card-ob">
+                        <div class="metric-header">
+                            <span class="metric-title">OPENING BALANCE</span>
+                            <span class="metric-badge badge-ob">CARRIED FWD</span>
+                        </div>
+                        <div class="metric-value" style="color: #0284c7;" id="trn-opening-bal">₹0.00</div>
+                        <div class="metric-sub">
+                            <span>Prior Session</span>
+                            <span>Opening Ledger</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 🚀 COMING SOON CONTAINER FOR TRANSACTION & ADMIN -->
+            
             <!-- 💳 TRANSACTION MODULE VIEW (Opening Balance, Due Total, Receipts Total, Net Outstanding) -->
             <div id="transaction-view" style="display: none;">
                 
@@ -2634,7 +2683,7 @@
         async function fetchTransactionMetrics(isSilent = false) {
             if (!currentAuth) return;
             try {
-                const url = `/api/metrics?company_id=${currentAuth.company_id}&institute_type=${currentAuth.institute_type}&module=transaction&q=${encodeURIComponent(trnSearchQuery)}`;
+                const url = `/api/metrics?company_id=${currentAuth.company_id}&institute_type=${currentAuth.institute_type}&module=transaction`;
                 const res = await fetch(url);
                 if (!res.ok) return;
                 const m = await res.json();
@@ -2648,216 +2697,8 @@
                 document.getElementById('trn-due-count').textContent = `${(m.total_invoices_count || 0).toLocaleString()} Invoices`;
 
                 document.getElementById('trn-opening-bal').textContent = fmtCurr(m.total_opening_bal);
-                
-                const advDiscTotal = (m.total_advance_adj || 0) + (m.total_discount || 0);
-                document.getElementById('trn-adv-disc').textContent = fmtCurr(advDiscTotal);
-                document.getElementById('trn-discount-val').textContent = `Disc: ${fmtCurr(m.total_discount)}`;
-                document.getElementById('trn-adv-val').textContent = `Adv: ${fmtCurr(m.total_advance_adj)}`;
-
-                document.getElementById('trn-net-outstanding').textContent = fmtCurr(m.net_outstanding);
-
-                // Collection percentage
-                const dueBasis = (m.total_due || 0) + (m.total_opening_bal || 0);
-                let colPct = dueBasis > 0 ? Math.min(100, Math.round((m.total_receipts / dueBasis) * 100)) : 100;
-                document.getElementById('trn-health-pct').textContent = `${colPct}% Collected`;
-                document.getElementById('trn-health-fill').style.width = `${colPct}%`;
-
-                // Render Table Vouchers
-                const tbody = document.getElementById('trn-table-body');
-                if (tbody) {
-                    if (m.transaction_records && m.transaction_records.length > 0) {
-                        tbody.innerHTML = m.transaction_records.map(r => {
-                            let tallyBadge = `<span class="tag-pill tag-s">POSTED (Y)</span>`;
-                            if (!r.tally_status || r.tally_status === 'Pending') {
-                                tallyBadge = `<span class="tag-pill tag-u">PENDING</span>`;
-                            }
-                            return `
-                                <tr>
-                                    <td class="cell-primary font-mono font-bold">${r.payment_no}</td>
-                                    <td class="cell-secondary font-mono">${r.trn_id}</td>
-                                    <td class="font-bold">${r.payment_date}</td>
-                                    <td style="font-weight: 800; color: #059669;">${fmtCurr(r.amount)}</td>
-                                    <td><span class="tag-pill tag-null">${r.payment_mode}</span></td>
-                                    <td>${tallyBadge}</td>
-                                    <td class="cell-secondary">${r.remarks}</td>
-                                </tr>
-                            `;
-                        }).join('');
-                    } else {
-                        tbody.innerHTML = `
-                            <tr>
-                                <td colspan="7">
-                                    <div class="table-empty-box">
-                                        No transaction payment vouchers found.
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    }
-                }
             } catch (e) {
                 console.error("Failed to fetch transaction metrics:", e);
-            }
-        }
-
-        function showDashboard() {
-            document.body.classList.remove('login-active');
-            document.body.classList.add('dashboard-active');
-
-            document.getElementById('login-view').style.display = 'none';
-            document.getElementById('dashboard-view').style.display = 'block';
-            
-            const badgeIcon = currentAuth.institute_type === 'college' ? '🎓' : '🏫';
-            document.getElementById('nav-company-details').textContent = `${badgeIcon} ${currentAuth.company_name} [${currentAuth.company_code}]`;
-
-            fetchLiveMetrics(false);
-            if (pollInterval) clearInterval(pollInterval);
-            pollInterval = setInterval(() => fetchLiveMetrics(true), 6000);
-        }
-
-        function setTabFilter(tabName) {
-            if (currentTab === tabName) return;
-            currentTab = tabName;
-            
-            const tabs = ['all', 's', 'u', 'null', 'l', 'p'];
-            tabs.forEach(t => {
-                const btn = document.getElementById(`tab-btn-${t}`);
-                if (btn) {
-                    if (t === tabName) btn.classList.add('active-tab');
-                    else btn.classList.remove('active-tab');
-                }
-            });
-
-            const cardIds = ['s', 'u', 'null', 'l', 'p'];
-            cardIds.forEach(cid => {
-                const card = document.getElementById(`card-filter-${cid}`);
-                if (card) {
-                    if (cid === tabName) card.classList.add('active-filter-card');
-                    else card.classList.remove('active-filter-card');
-                }
-            });
-
-            // Instant Loading Indicator inside Table on Tab Switch
-            const tbody = document.getElementById('live-table-body');
-            if (tbody) {
-                const tabTitles = {
-                    'all': 'All Registered Students',
-                    's': 'Synced to Tally (S)',
-                    'u': 'Pending Modified (U)',
-                    'null': 'New Admissions (NULL)',
-                    'l': 'Left Out Students (L)',
-                    'p': 'Passed Out Students (P)'
-                };
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" style="padding: 45px 0;">
-                            <div class="table-loading-overlay">
-                                <div class="loading-spinner"></div>
-                                <span style="margin-top: 8px; font-weight: 700; color: #0284c7; font-size: 14px;">Loading ${tabTitles[tabName] || tabName.toUpperCase()} records...</span>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }
-
-            fetchLiveMetrics(false);
-        }
-
-        function handleTableSearch(val) {
-            searchQuery = val.trim();
-            clearTimeout(searchDebounceTimer);
-            
-            const tbody = document.getElementById('live-table-body');
-            if (tbody) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" style="padding: 45px 0;">
-                            <div class="table-loading-overlay">
-                                <div class="loading-spinner"></div>
-                                <span style="margin-top: 8px; font-weight: 700; color: #0284c7; font-size: 14px;">Searching records...</span>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }
-            
-            searchDebounceTimer = setTimeout(() => {
-                fetchLiveMetrics(false);
-            }, 300);
-        }
-
-        async function fetchLiveMetrics(isSilent = false) {
-            if (!currentAuth) return;
-            
-            if (fetchController) {
-                fetchController.abort();
-            }
-            fetchController = new AbortController();
-
-            try {
-                const url = `/api/metrics?company_id=${currentAuth.company_id}&institute_type=${currentAuth.institute_type}&tab=${currentTab}&q=${encodeURIComponent(searchQuery)}`;
-                const res = await fetch(url, { signal: fetchController.signal });
-                if (!res.ok) return;
-                const m = await res.json();
-
-                document.getElementById('metric-s').textContent = (m.synced_s || 0).toLocaleString();
-                document.getElementById('metric-u').textContent = (m.pending_u || 0).toLocaleString();
-                document.getElementById('metric-null').textContent = (m.new_null || 0).toLocaleString();
-                document.getElementById('metric-l').textContent = (m.left_l || 0).toLocaleString();
-                document.getElementById('metric-p').textContent = (m.passout_p || 0).toLocaleString();
-                document.getElementById('metric-total').textContent = (m.total_students || 0).toLocaleString();
-
-                document.getElementById('count-tab-all').textContent = (m.total_students || 0).toLocaleString();
-                document.getElementById('count-tab-s').textContent = (m.synced_s || 0).toLocaleString();
-                document.getElementById('count-tab-u').textContent = (m.pending_u || 0).toLocaleString();
-                document.getElementById('count-tab-null').textContent = (m.new_null || 0).toLocaleString();
-                document.getElementById('count-tab-l').textContent = (m.left_l || 0).toLocaleString();
-                document.getElementById('count-tab-p').textContent = (m.passout_p || 0).toLocaleString();
-
-                const pct = m.sync_percentage || 0;
-                document.getElementById('health-pct').textContent = `${pct}% Synced`;
-                document.getElementById('health-fill').style.width = `${pct}%`;
-
-                const tbody = document.getElementById('live-table-body');
-                if (tbody) {
-                    if (m.student_records && m.student_records.length > 0) {
-                        tbody.innerHTML = m.student_records.map(row => {
-                            let syncBadge = `<span class="tag-pill tag-null">NULL (NEW)</span>`;
-                            if (row.tally_sync === 'S') syncBadge = `<span class="tag-pill tag-s">SYNCED (S)</span>`;
-                            else if (row.tally_sync === 'U') syncBadge = `<span class="tag-pill tag-u">MODIFIED (U)</span>`;
-
-                            let statusBadge = `<span style="color: #64748b; font-weight: 700;">Active</span>`;
-                            if (row.is_left) {
-                                if (row.status === 'P') statusBadge = `<span class="tag-pill tag-p">Passed Out</span>`;
-                                else statusBadge = `<span class="tag-pill tag-l">Left</span>`;
-                            }
-
-                            return `
-                                <tr>
-                                    <td class="cell-primary font-mono">${row.enrl_no || row.enrollment_no || '-'}</td>
-                                    <td class="font-bold">${row.student_name || '-'}</td>
-                                    <td class="cell-secondary">${row.class_branch || row.student_class || '-'}</td>
-                                    <td>${statusBadge}</td>
-                                    <td>${syncBadge}</td>
-                                    <td class="cell-secondary font-mono">${row.activity_time || row.last_active || '-'}</td>
-                                </tr>
-                            `;
-                        }).join('');
-                    } else {
-                        tbody.innerHTML = `
-                            <tr>
-                                <td colspan="6">
-                                    <div class="table-empty-box">
-                                        No student records found for this category or search query.
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    }
-                }
-            } catch (err) {
-                if (err.name === 'AbortError') return;
-                console.error("Failed to fetch live metrics:", err);
             }
         }
 
