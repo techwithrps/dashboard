@@ -4000,7 +4000,7 @@
             <!-- 💳 TRANSACTION MODULE VIEW (Exact 3 Cards: TOTAL RECEIPTS, TOTAL FEE DUE, OPENING BALANCE) -->
 
             <div id="transaction-view" style="display: none;">
-                <!-- PRODUCTION-READY REFERENCE ACCOUNTS SUMMARY DASHBOARD -->
+                <!-- PRODUCTION-READY REFERENCE ACCOUNTS SUMMARY DASHBOARD WITH REAL ERP DATA -->
                 <div style="width: 100%; max-width: 1380px; margin: 0 auto; padding-top: 10px;">
 <div class="dashboard-container">
 
@@ -4039,7 +4039,7 @@
                 </div>
                 <div class="kpi-content">
                     <span class="kpi-label">Total Opening</span>
-                    <div class="kpi-value">₹ 2,23,000</div>
+                    <div class="kpi-value" id="kpi-live-opening">₹ 0</div>
                     <div class="kpi-trend-row">
                         <span class="trend-badge trend-up-green">↗ +12%</span>
                         <span class="trend-desc">vs last period</span>
@@ -4057,7 +4057,7 @@
                 </div>
                 <div class="kpi-content">
                     <span class="kpi-label">Total Due's</span>
-                    <div class="kpi-value">₹ 57,000</div>
+                    <div class="kpi-value" id="kpi-live-due">₹ 0</div>
                     <div class="kpi-trend-row">
                         <span class="trend-badge trend-up-red">↗ +8%</span>
                         <span class="trend-desc">vs last period</span>
@@ -4075,7 +4075,7 @@
                 </div>
                 <div class="kpi-content">
                     <span class="kpi-label">Total Receipts</span>
-                    <div class="kpi-value">₹ 90,000</div>
+                    <div class="kpi-value" id="kpi-live-receipts">₹ 0</div>
                     <div class="kpi-trend-row">
                         <span class="trend-badge trend-up-green">↗ +15%</span>
                         <span class="trend-desc">vs last period</span>
@@ -4093,7 +4093,7 @@
                 </div>
                 <div class="kpi-content">
                     <span class="kpi-label">Total Balance</span>
-                    <div class="kpi-value">₹ 1,90,000</div>
+                    <div class="kpi-value" id="kpi-live-balance">₹ 0</div>
                     <div class="kpi-trend-row">
                         <span class="trend-badge trend-up-green">↗ +10%</span>
                         <span class="trend-desc">vs last period</span>
@@ -4130,7 +4130,7 @@
                             </div>
                             <span class="row-label">Opening</span>
                         </div>
-                        <span class="row-value">₹ 1,25,000</span>
+                        <span class="row-value" id="tally-live-opening">₹ 0</span>
                     </div>
 
                     <!-- Due's -->
@@ -4143,7 +4143,7 @@
                             </div>
                             <span class="row-label">Due's</span>
                         </div>
-                        <span class="row-value">₹ 35,000</span>
+                        <span class="row-value" id="tally-live-due">₹ 0</span>
                     </div>
 
                     <!-- Receipts -->
@@ -4156,7 +4156,7 @@
                             </div>
                             <span class="row-label">Receipts</span>
                         </div>
-                        <span class="row-value">₹ 50,000</span>
+                        <span class="row-value" id="tally-live-receipts">₹ 0</span>
                     </div>
 
                     <!-- Balance (Mint Highlighted) -->
@@ -4169,7 +4169,7 @@
                             </div>
                             <span class="row-label">Balance</span>
                         </div>
-                        <span class="row-value">₹ 1,10,000</span>
+                        <span class="row-value" id="tally-live-balance">₹ 0</span>
                     </div>
                 </div>
             </div>
@@ -4198,7 +4198,7 @@
                             </div>
                             <span class="row-label">Opening</span>
                         </div>
-                        <span class="row-value">₹ 98,000</span>
+                        <span class="row-value" id="elogi-live-opening">₹ 0</span>
                     </div>
 
                     <!-- Due's -->
@@ -4211,7 +4211,7 @@
                             </div>
                             <span class="row-label">Due's</span>
                         </div>
-                        <span class="row-value">₹ 22,000</span>
+                        <span class="row-value" id="elogi-live-due">₹ 0</span>
                     </div>
 
                     <!-- Receipts -->
@@ -4224,7 +4224,7 @@
                             </div>
                             <span class="row-label">Receipts</span>
                         </div>
-                        <span class="row-value">₹ 40,000</span>
+                        <span class="row-value" id="elogi-live-receipts">₹ 0</span>
                     </div>
 
                     <!-- Balance (Purple Highlighted) -->
@@ -4237,7 +4237,7 @@
                             </div>
                             <span class="row-label">Balance</span>
                         </div>
-                        <span class="row-value">₹ 80,000</span>
+                        <span class="row-value" id="elogi-live-balance">₹ 0</span>
                     </div>
                 </div>
             </div>
@@ -6035,12 +6035,12 @@
 
                             return `
                                 <tr>
-                                    <td class="cell-primary font-mono">${row.enrollment_no || '-'}</td>
+                                    <td class="cell-primary font-mono">${row.enrl_no || row.enrollment_no || '-'}</td>
                                     <td class="font-bold">${row.student_name || '-'}</td>
-                                    <td class="cell-secondary">${row.student_class || '-'}</td>
+                                    <td class="cell-secondary">${row.class_branch || row.student_class || '-'}</td>
                                     <td>${statusBadge}</td>
                                     <td>${syncBadge}</td>
-                                    <td class="cell-secondary font-mono">${row.last_active || '-'}</td>
+                                    <td class="cell-secondary font-mono">${row.activity_time || row.last_active || '-'}</td>
                                 </tr>
                             `;
                         }).join('');
@@ -6126,7 +6126,7 @@
             }, 300);
         }
 
-        async function fetchTransactionMetrics(isSilent = false) {
+                async function fetchTransactionMetrics(isSilent = false) {
             if (!currentAuth) return;
             try {
                 const url = `/api/metrics?company_id=${currentAuth.company_id}&institute_type=${currentAuth.institute_type}&module=transaction&q=${encodeURIComponent(trnSearchQuery)}`;
@@ -6136,47 +6136,113 @@
 
                 const fmtCurr = (num) => '₹ ' + Number(num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-                const elRcpt = document.getElementById('trn-total-receipts');
-                if (elRcpt) elRcpt.textContent = fmtCurr(m.total_receipts);
-                const elRcptCnt = document.getElementById('trn-receipts-count');
-                if (elRcptCnt) elRcptCnt.textContent = `${(m.total_vouchers_count || 0).toLocaleString()} Vouchers`;
+                const totalOpn = Number(m.total_opening_bal || 0);
+                const totalDue = Number(m.total_due || 0);
+                const totalRcpt = Number(m.total_receipts || 0);
+                const totalBal = (totalOpn + totalDue) - totalRcpt;
 
-                const elDue = document.getElementById('trn-total-due');
-                if (elDue) elDue.textContent = fmtCurr(m.total_due);
-                const elDueCnt = document.getElementById('trn-due-count');
-                if (elDueCnt) elDueCnt.textContent = `${(m.total_invoices_count || 0).toLocaleString()} Invoices`;
+                // 1. Bind Top KPI Summary Cards with Live Data
+                const elKpiOpn = document.getElementById('kpi-live-opening');
+                if (elKpiOpn) elKpiOpn.textContent = fmtCurr(totalOpn);
 
-                const elOpn = document.getElementById('trn-opening-bal');
-                if (elOpn) elOpn.textContent = fmtCurr(m.total_opening_bal);
+                const elKpiDue = document.getElementById('kpi-live-due');
+                if (elKpiDue) elKpiDue.textContent = fmtCurr(totalDue);
 
-                const tbody = document.getElementById('trn-table-body');
-                if (tbody && m.transaction_records) {
-                    if (m.transaction_records.length > 0) {
-                        tbody.innerHTML = m.transaction_records.map(r => `
-                            <tr>
-                                <td class="cell-primary font-mono">${r.payment_no || r.payment_id || '-'}</td>
-                                <td class="cell-secondary font-mono">${r.trn_id || '-'}</td>
-                                <td>${r.payment_date || '-'}</td>
-                                <td class="font-bold font-mono" style="color: #059669;">₹ ${Number(r.amount || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                                <td><span class="tag-pill tag-s">${r.payment_mode || 'Online'}</span></td>
-                                <td><span class="tag-pill tag-null">${r.tally_status || 'Pending'}</span></td>
-                                <td class="cell-secondary font-mono">${r.activity_time || '-'}</td>
-                            </tr>
-                        `).join('');
-                    } else {
-                        tbody.innerHTML = `
-                            <tr>
-                                <td colspan="7">
-                                    <div class="table-empty-box">
-                                        No transaction vouchers found for this period.
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    }
+                const elKpiRcpt = document.getElementById('kpi-live-receipts');
+                if (elKpiRcpt) elKpiRcpt.textContent = fmtCurr(totalRcpt);
+
+                const elKpiBal = document.getElementById('kpi-live-balance');
+                if (elKpiBal) elKpiBal.textContent = fmtCurr(totalBal);
+
+                // 2. Bind Tally Account Card with Live Data
+                const elTOpn = document.getElementById('tally-live-opening');
+                if (elTOpn) elTOpn.textContent = fmtCurr(totalOpn);
+
+                const elTDue = document.getElementById('tally-live-due');
+                if (elTDue) elTDue.textContent = fmtCurr(totalDue);
+
+                const elTRcpt = document.getElementById('tally-live-receipts');
+                if (elTRcpt) elTRcpt.textContent = fmtCurr(totalRcpt);
+
+                const elTBal = document.getElementById('tally-live-balance');
+                if (elTBal) elTBal.textContent = fmtCurr(totalBal);
+
+                // 3. Bind Elogipay Account Card with Live Portal Collection Data
+                const elElogiOpn = document.getElementById('elogi-live-opening');
+                if (elElogiOpn) elElogiOpn.textContent = fmtCurr(totalOpn);
+
+                const elElogiDue = document.getElementById('elogi-live-due');
+                if (elElogiDue) elElogiDue.textContent = fmtCurr(totalDue);
+
+                const elElogiRcpt = document.getElementById('elogi-live-receipts');
+                if (elElogiRcpt) elElogiRcpt.textContent = fmtCurr(totalRcpt);
+
+                const elElogiBal = document.getElementById('elogi-live-balance');
+                if (elElogiBal) elElogiBal.textContent = fmtCurr(totalBal);
+
+                // 4. Update Comparison Chart Dynamic Heights and Tooltips
+                const maxVal = Math.max(totalOpn, totalDue, totalRcpt, Math.abs(totalBal), 1);
+                const scaleHeight = (val) => Math.max(12, Math.round((Math.abs(val) / maxVal) * 160));
+
+                const chartStage = document.getElementById('chart-stage-container');
+                if (chartStage) {
+                    chartStage.innerHTML = `
+                        <!-- Opening -->
+                        <div class="chart-group-col">
+                            <div class="bars-pair">
+                                <div class="bar-wrap">
+                                    <span class="bar-tooltip-val">${fmtCurr(totalOpn)}</span>
+                                    <div class="chart-bar bar-tally" style="height: ${scaleHeight(totalOpn)}px;" title="Tally Opening: ${fmtCurr(totalOpn)}"></div>
+                                </div>
+                                <div class="bar-wrap">
+                                    <span class="bar-tooltip-val">${fmtCurr(totalOpn)}</span>
+                                    <div class="chart-bar bar-elogipay" style="height: ${scaleHeight(totalOpn)}px;" title="Elogipay Opening: ${fmtCurr(totalOpn)}"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Due's -->
+                        <div class="chart-group-col">
+                            <div class="bars-pair">
+                                <div class="bar-wrap">
+                                    <span class="bar-tooltip-val">${fmtCurr(totalDue)}</span>
+                                    <div class="chart-bar bar-tally" style="height: ${scaleHeight(totalDue)}px;" title="Tally Due's: ${fmtCurr(totalDue)}"></div>
+                                </div>
+                                <div class="bar-wrap">
+                                    <span class="bar-tooltip-val">${fmtCurr(totalDue)}</span>
+                                    <div class="chart-bar bar-elogipay" style="height: ${scaleHeight(totalDue)}px;" title="Elogipay Due's: ${fmtCurr(totalDue)}"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Receipts -->
+                        <div class="chart-group-col">
+                            <div class="bars-pair">
+                                <div class="bar-wrap">
+                                    <span class="bar-tooltip-val">${fmtCurr(totalRcpt)}</span>
+                                    <div class="chart-bar bar-tally" style="height: ${scaleHeight(totalRcpt)}px;" title="Tally Receipts: ${fmtCurr(totalRcpt)}"></div>
+                                </div>
+                                <div class="bar-wrap">
+                                    <span class="bar-tooltip-val">${fmtCurr(totalRcpt)}</span>
+                                    <div class="chart-bar bar-elogipay" style="height: ${scaleHeight(totalRcpt)}px;" title="Elogipay Receipts: ${fmtCurr(totalRcpt)}"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Balance -->
+                        <div class="chart-group-col">
+                            <div class="bars-pair">
+                                <div class="bar-wrap">
+                                    <span class="bar-tooltip-val">${fmtCurr(totalBal)}</span>
+                                    <div class="chart-bar bar-tally" style="height: ${scaleHeight(totalBal)}px;" title="Tally Balance: ${fmtCurr(totalBal)}"></div>
+                                </div>
+                                <div class="bar-wrap">
+                                    <span class="bar-tooltip-val">${fmtCurr(totalBal)}</span>
+                                    <div class="chart-bar bar-elogipay" style="height: ${scaleHeight(totalBal)}px;" title="Elogipay Balance: ${fmtCurr(totalBal)}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 }
             } catch (e) {
-                console.error("Failed to fetch transaction metrics:", e);
+                console.error("Failed to fetch live transaction metrics:", e);
             }
         }
 
