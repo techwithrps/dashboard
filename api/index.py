@@ -17,12 +17,27 @@ SCHOOL_DB_PASS = os.environ.get("SCHOOL_DB_PASS", "ELOGIPAYSCHOOL_1520#")
 COLLEGE_DB_USER = os.environ.get("COLLEGE_DB_USER", "C##ELOGIPAYCOLLEGE")
 COLLEGE_DB_PASS = os.environ.get("COLLEGE_DB_PASS", "ELOGIPAYCOLLEGE_1228#")
 
+_pools = {}
+
+def get_pool(institute_type: str = "college"):
+    inst = str(institute_type).lower()
+    if inst not in _pools:
+        dsn = f"{ORACLE_HOST}:{ORACLE_PORT}/{ORACLE_SERVICE}"
+        if inst == "school":
+            _pools[inst] = oracledb.create_pool(user=SCHOOL_DB_USER, password=SCHOOL_DB_PASS, dsn=dsn, min=1, max=10, increment=1)
+        else:
+            _pools[inst] = oracledb.create_pool(user=COLLEGE_DB_USER, password=COLLEGE_DB_PASS, dsn=dsn, min=1, max=10, increment=1)
+    return _pools[inst]
+
 def get_connection(institute_type: str = "college"):
-    dsn = f"{ORACLE_HOST}:{ORACLE_PORT}/{ORACLE_SERVICE}"
-    if str(institute_type).lower() == "school":
-        return oracledb.connect(user=SCHOOL_DB_USER, password=SCHOOL_DB_PASS, dsn=dsn)
-    else:
-        return oracledb.connect(user=COLLEGE_DB_USER, password=COLLEGE_DB_PASS, dsn=dsn)
+    try:
+        return get_pool(institute_type).acquire()
+    except Exception:
+        dsn = f"{ORACLE_HOST}:{ORACLE_PORT}/{ORACLE_SERVICE}"
+        if str(institute_type).lower() == "school":
+            return oracledb.connect(user=SCHOOL_DB_USER, password=SCHOOL_DB_PASS, dsn=dsn)
+        else:
+            return oracledb.connect(user=COLLEGE_DB_USER, password=COLLEGE_DB_PASS, dsn=dsn)
 
 def handle_login(data):
     code_input = str(data.get("company_code", "")).strip()
@@ -145,111 +160,98 @@ def handle_metrics(params):
         company_name = c_row[0] if c_row else f"Company ID {company_id}"
         company_code = c_row[1] if c_row else str(company_id)
         
-        # 2. Aggregated Master Sync Metrics (S, U, NULL, L, P, Total)
-        cur.execute(f"""
-            SELECT 
-                SUM(CASE WHEN TALLY_SYNC = 'S' THEN 1 ELSE 0 END) AS SYNCED_S,
-                SUM(CASE WHEN TALLY_SYNC = 'U' OR TALLY_SYNC = ' ' THEN 1 ELSE 0 END) AS PENDING_U,
-                SUM(CASE WHEN TALLY_SYNC IS NULL THEN 1 ELSE 0 END) AS NEW_NULL,
-                SUM(CASE WHEN STUDENT_STATUS = 'L' THEN 1 ELSE 0 END) AS LEFT_L,
-                SUM(CASE WHEN STUDENT_STATUS = 'P' THEN 1 ELSE 0 END) AS PASSOUT_P,
-                COUNT(1) AS TOTAL_STUDENTS
-            FROM {schema}.STUDENT_MASTER_DATA
-            WHERE COMPANY_ID = :cid
-        """, {"cid": company_id})
-        row = cur.fetchone()
-        
-        # 3. Financial Totals for Transaction Module (Exact eLOGiPay ERP Procedure Calculation)
-        f_date = clean_from_date if clean_from_date else "2026-04-01"
-        t_date = clean_to_date if clean_to_date else "2026-09-11"
-
-        cur.execute(f"""
-            WITH STUDENT_INFO AS (
-              SELECT SM.STUDENT_ID, SM.ENRL_NO
-              FROM {schema}.STUDENT_MASTER_DATA SM
-              LEFT JOIN {schema}.STUDENT_CLASS_MASTER CM ON CM.STUDENT_CLASS_ID = SM.STUDENT_CLASS_ID
-              WHERE SM.STUDENT_STATUS IS NULL AND SM.ACTIVE_STATUS_ID = 1 AND SM.COMPANY_ID = :cid
-            ),
-            DistinctFD AS (
-              SELECT DISTINCT ENRL_NO, INVOICE_NO, INVOICE_TYPE, INVOICE_DATE, AMOUNT
-              FROM {schema}.STUDENT_FEE_DETAILS
-              WHERE COMPANY_ID = :cid
-            ),
-            PaymentTotal AS (
-              SELECT INVOICE_NO, SUM(NVL(AMOUNT, 0)) AS RECEIPT
-              FROM {schema}.STUDENT_FEE_PAYMENT_DTLS
-              WHERE REMARKS NOT IN ('Advance')
-              GROUP BY INVOICE_NO
-            ),
-            OPENING_BAL AS (
-              SELECT FD.ENRL_NO,
-                SUM(CASE WHEN FD.INVOICE_TYPE IN ('FE', 'OB', 'Bounce', 'REFUND') THEN NVL(FD.AMOUNT, 0) ELSE 0 END)
-                - SUM(CASE WHEN FD.INVOICE_TYPE IN ('DI', 'AD') THEN NVL(FD.AMOUNT, 0) ELSE 0 END)
-                - SUM(NVL(P.RECEIPT, 0)) AS OPENING_AMOUNT
-              FROM DistinctFD FD
-              LEFT JOIN PaymentTotal P ON FD.INVOICE_NO = P.INVOICE_NO
-              WHERE FD.INVOICE_DATE < TO_DATE(:fdate, 'YYYY-MM-DD')
-              GROUP BY FD.ENRL_NO
-            ),
-            CURRENT_PERIOD AS (
-              SELECT FD.ENRL_NO,
-                SUM(CASE WHEN FD.INVOICE_TYPE IN ('FE', 'OB', 'Bounce') THEN NVL(FD.AMOUNT, 0) ELSE 0 END) AS DUE_AMOUNT,
-                SUM(CASE WHEN FD.INVOICE_TYPE = 'DI' THEN NVL(FD.AMOUNT, 0) ELSE 0 END) AS DISCOUNT,
-                SUM(CASE WHEN FD.INVOICE_TYPE = 'REFUND' THEN NVL(FD.AMOUNT, 0) ELSE 0 END) AS REFUND_AMOUNT,
-                SUM(CASE WHEN FD.INVOICE_TYPE = 'AD' THEN NVL(FD.AMOUNT, 0) ELSE 0 END) AS ADVANCE_AMOUNT,
-                SUM(NVL(P.RECEIPT, 0)) AS RECEIPT
-              FROM DistinctFD FD
-              LEFT JOIN PaymentTotal P ON FD.INVOICE_NO = P.INVOICE_NO
-              WHERE FD.INVOICE_DATE BETWEEN TO_DATE(:fdate, 'YYYY-MM-DD') AND TO_DATE(:tdate, 'YYYY-MM-DD')
-              GROUP BY FD.ENRL_NO
-            ),
-            STUDENT_TOTALS AS (
-              SELECT SI.ENRL_NO,
-                TRUNC(MAX(NVL(OB.OPENING_AMOUNT, 0)), 2) AS OPENING_BALANCE,
-                TRUNC(MAX(NVL(CP.DUE_AMOUNT, 0)), 2) AS DUE_AMOUNT,
-                TRUNC(MAX(NVL(CP.REFUND_AMOUNT, 0)), 2) AS REFUND_AMOUNT,
-                TRUNC(MAX(NVL(CP.ADVANCE_AMOUNT, 0)), 2) AS ADVANCE_ADJUSTED,
-                TRUNC(MAX(NVL(CP.DISCOUNT, 0)), 2) AS DISCOUNT,
-                TRUNC(MAX(NVL(CP.RECEIPT, 0)), 2) AS PAYMENT
-              FROM STUDENT_INFO SI
-              LEFT JOIN OPENING_BAL OB ON OB.ENRL_NO = SI.ENRL_NO
-              LEFT JOIN CURRENT_PERIOD CP ON CP.ENRL_NO = SI.ENRL_NO
-              WHERE EXISTS (
-                SELECT 1 FROM DistinctFD FD
-                WHERE FD.ENRL_NO = SI.ENRL_NO
-                  AND (FD.INVOICE_DATE < TO_DATE(:fdate, 'YYYY-MM-DD')
-                       OR FD.INVOICE_DATE BETWEEN TO_DATE(:fdate, 'YYYY-MM-DD') AND TO_DATE(:tdate, 'YYYY-MM-DD'))
-              )
-              GROUP BY SI.ENRL_NO
-            )
-            SELECT
-              NVL(SUM(OPENING_BALANCE), 0),
-              NVL(SUM(DUE_AMOUNT), 0),
-              NVL(SUM(PAYMENT), 0),
-              NVL(SUM(DISCOUNT), 0),
-              NVL(SUM(ADVANCE_ADJUSTED), 0),
-              NVL(SUM(REFUND_AMOUNT), 0)
-            FROM STUDENT_TOTALS
-        """, {"cid": company_id, "fdate": f_date, "tdate": t_date})
-        fin_row = cur.fetchone() or (0, 0, 0, 0, 0, 0)
-        total_ob_amt = float(fin_row[0] or 0)
-        total_due_amt = float(fin_row[1] or 0)
-        total_receipts_amt = float(fin_row[2] or 0)
-        total_discount_amt = float(fin_row[3] or 0)
-        total_adv_adj_amt = float(fin_row[4] or 0)
-        total_refund_amt = float(fin_row[5] or 0)
-
-        net_outstanding_balance = (total_due_amt + total_ob_amt + total_refund_amt) - (total_discount_amt + total_adv_adj_amt + total_receipts_amt)
-
-        cur.execute(f"SELECT COUNT(DISTINCT INVOICE_NO) FROM {schema}.STUDENT_FEE_DETAILS WHERE COMPANY_ID = :cid", {"cid": company_id})
-        total_invoices_count = int(cur.fetchone()[0] or 0)
-
-        cur.execute(f"SELECT COUNT(1) FROM {schema}.STUDENT_FEE_PAYMENT WHERE COMPANY_ID = :cid", {"cid": company_id})
-        total_vouchers_count = int(cur.fetchone()[0] or 0)
-        
-        # 4. If transaction module requested, fetch recent receipt vouchers
+        # Initialize defaults
+        synced = pending = new_null = left_l = passout_p = total = 0
+        sync_percentage = 100.0
+        student_records = []
+        total_ob_amt = total_due_amt = total_receipts_amt = total_discount_amt = total_adv_adj_amt = total_refund_amt = net_outstanding_balance = 0.0
+        total_invoices_count = total_vouchers_count = 0
         transaction_records = []
+
         if module_tab == "transaction":
+            # 2. Financial Totals for Transaction Module (Exact eLOGiPay ERP Procedure Calculation)
+            f_date = clean_from_date if clean_from_date else "2026-04-01"
+            t_date = clean_to_date if clean_to_date else "2026-09-11"
+
+            cur.execute(f"""
+                WITH STUDENT_INFO AS (
+                  SELECT SM.STUDENT_ID, SM.ENRL_NO
+                  FROM {schema}.STUDENT_MASTER_DATA SM
+                  LEFT JOIN {schema}.STUDENT_CLASS_MASTER CM ON CM.STUDENT_CLASS_ID = SM.STUDENT_CLASS_ID
+                  WHERE SM.STUDENT_STATUS IS NULL AND SM.ACTIVE_STATUS_ID = 1 AND SM.COMPANY_ID = :cid
+                ),
+                DistinctFD AS (
+                  SELECT DISTINCT ENRL_NO, INVOICE_NO, INVOICE_TYPE, INVOICE_DATE, AMOUNT
+                  FROM {schema}.STUDENT_FEE_DETAILS
+                  WHERE COMPANY_ID = :cid
+                ),
+                PaymentTotal AS (
+                  SELECT INVOICE_NO, SUM(NVL(AMOUNT, 0)) AS RECEIPT
+                  FROM {schema}.STUDENT_FEE_PAYMENT_DTLS
+                  WHERE REMARKS NOT IN ('Advance')
+                  GROUP BY INVOICE_NO
+                ),
+                OPENING_BAL AS (
+                  SELECT FD.ENRL_NO,
+                    SUM(CASE WHEN FD.INVOICE_TYPE IN ('FE', 'OB', 'Bounce', 'REFUND') THEN NVL(FD.AMOUNT, 0) ELSE 0 END)
+                    - SUM(CASE WHEN FD.INVOICE_TYPE IN ('DI', 'AD') THEN NVL(FD.AMOUNT, 0) ELSE 0 END)
+                    - SUM(NVL(P.RECEIPT, 0)) AS OPENING_AMOUNT
+                  FROM DistinctFD FD
+                  LEFT JOIN PaymentTotal P ON FD.INVOICE_NO = P.INVOICE_NO
+                  WHERE FD.INVOICE_DATE < TO_DATE(:fdate, 'YYYY-MM-DD')
+                  GROUP BY FD.ENRL_NO
+                ),
+                CURRENT_PERIOD AS (
+                  SELECT FD.ENRL_NO,
+                    SUM(CASE WHEN FD.INVOICE_TYPE IN ('FE', 'OB', 'Bounce') THEN NVL(FD.AMOUNT, 0) ELSE 0 END) AS DUE_AMOUNT,
+                    SUM(CASE WHEN FD.INVOICE_TYPE = 'DI' THEN NVL(FD.AMOUNT, 0) ELSE 0 END) AS DISCOUNT,
+                    SUM(CASE WHEN FD.INVOICE_TYPE = 'REFUND' THEN NVL(FD.AMOUNT, 0) ELSE 0 END) AS REFUND_AMOUNT,
+                    SUM(CASE WHEN FD.INVOICE_TYPE = 'AD' THEN NVL(FD.AMOUNT, 0) ELSE 0 END) AS ADVANCE_AMOUNT,
+                    SUM(NVL(P.RECEIPT, 0)) AS RECEIPT
+                  FROM DistinctFD FD
+                  LEFT JOIN PaymentTotal P ON FD.INVOICE_NO = P.INVOICE_NO
+                  WHERE FD.INVOICE_DATE BETWEEN TO_DATE(:fdate, 'YYYY-MM-DD') AND TO_DATE(:tdate, 'YYYY-MM-DD')
+                  GROUP BY FD.ENRL_NO
+                ),
+                STUDENT_TOTALS AS (
+                  SELECT SI.ENRL_NO,
+                    TRUNC(MAX(NVL(OB.OPENING_AMOUNT, 0)), 2) AS OPENING_BALANCE,
+                    TRUNC(MAX(NVL(CP.DUE_AMOUNT, 0)), 2) AS DUE_AMOUNT,
+                    TRUNC(MAX(NVL(CP.REFUND_AMOUNT, 0)), 2) AS REFUND_AMOUNT,
+                    TRUNC(MAX(NVL(CP.ADVANCE_AMOUNT, 0)), 2) AS ADVANCE_ADJUSTED,
+                    TRUNC(MAX(NVL(CP.DISCOUNT, 0)), 2) AS DISCOUNT,
+                    TRUNC(MAX(NVL(CP.RECEIPT, 0)), 2) AS PAYMENT
+                  FROM STUDENT_INFO SI
+                  LEFT JOIN OPENING_BAL OB ON OB.ENRL_NO = SI.ENRL_NO
+                  LEFT JOIN CURRENT_PERIOD CP ON CP.ENRL_NO = SI.ENRL_NO
+                  WHERE EXISTS (
+                    SELECT 1 FROM DistinctFD FD
+                    WHERE FD.ENRL_NO = SI.ENRL_NO
+                      AND (FD.INVOICE_DATE < TO_DATE(:fdate, 'YYYY-MM-DD')
+                           OR FD.INVOICE_DATE BETWEEN TO_DATE(:fdate, 'YYYY-MM-DD') AND TO_DATE(:tdate, 'YYYY-MM-DD'))
+                  )
+                  GROUP BY SI.ENRL_NO
+                )
+                SELECT
+                  NVL(SUM(OPENING_BALANCE), 0),
+                  NVL(SUM(DUE_AMOUNT), 0),
+                  NVL(SUM(PAYMENT), 0),
+                  NVL(SUM(DISCOUNT), 0),
+                  NVL(SUM(ADVANCE_ADJUSTED), 0),
+                  NVL(SUM(REFUND_AMOUNT), 0)
+                FROM STUDENT_TOTALS
+            """, {"cid": company_id, "fdate": f_date, "tdate": t_date})
+            fin_row = cur.fetchone() or (0, 0, 0, 0, 0, 0)
+            total_ob_amt = float(fin_row[0] or 0)
+            total_due_amt = float(fin_row[1] or 0)
+            total_receipts_amt = float(fin_row[2] or 0)
+            total_discount_amt = float(fin_row[3] or 0)
+            total_adv_adj_amt = float(fin_row[4] or 0)
+            total_refund_amt = float(fin_row[5] or 0)
+
+            net_outstanding_balance = (total_due_amt + total_ob_amt + total_refund_amt) - (total_discount_amt + total_adv_adj_amt + total_receipts_amt)
+
+            # Recent receipt vouchers for transaction list
             where_vouchers = ["COMPANY_ID = :cid"]
             v_params = {"cid": company_id}
             if search_q:
@@ -278,10 +280,29 @@ def handle_metrics(params):
                     "remarks": vr[7] or "-",
                     "activity_time": str(vr[8]) if vr[8] else "-"
                 })
-        
-        # 5. Dynamic Filtered Students Query for Master Tab
-        student_records = []
-        if module_tab != "transaction":
+        else:
+            # 2. Aggregated Master Sync Metrics (S, U, NULL, L, P, Total)
+            cur.execute(f"""
+                SELECT 
+                    SUM(CASE WHEN TALLY_SYNC = 'S' THEN 1 ELSE 0 END) AS SYNCED_S,
+                    SUM(CASE WHEN TALLY_SYNC = 'U' OR TALLY_SYNC = ' ' THEN 1 ELSE 0 END) AS PENDING_U,
+                    SUM(CASE WHEN TALLY_SYNC IS NULL THEN 1 ELSE 0 END) AS NEW_NULL,
+                    SUM(CASE WHEN STUDENT_STATUS = 'L' THEN 1 ELSE 0 END) AS LEFT_L,
+                    SUM(CASE WHEN STUDENT_STATUS = 'P' THEN 1 ELSE 0 END) AS PASSOUT_P,
+                    COUNT(1) AS TOTAL_STUDENTS
+                FROM {schema}.STUDENT_MASTER_DATA
+                WHERE COMPANY_ID = :cid
+            """, {"cid": company_id})
+            row = cur.fetchone() or (0, 0, 0, 0, 0, 0)
+            synced = row[0] or 0
+            pending = row[1] or 0
+            new_null = row[2] or 0
+            left_l = row[3] or 0
+            passout_p = row[4] or 0
+            total = row[5] or 0
+            sync_percentage = round((synced / total * 100), 1) if total > 0 else 100.0
+
+            # Dynamic Filtered Students Query for Master Tab
             where_clauses = ["COMPANY_ID = :cid"]
             sql_params = {"cid": company_id}
             
@@ -321,17 +342,6 @@ def handle_metrics(params):
                     "tally_sync": r[4] or "NULL",
                     "activity_time": str(r[5]) if r[5] else "N/A"
                 })
-            
-        cur.close()
-        
-        synced = row[0] or 0
-        pending = row[1] or 0
-        new_null = row[2] or 0
-        left_l = row[3] or 0
-        passout_p = row[4] or 0
-        total = row[5] or 0
-        
-        sync_percentage = round((synced / total * 100), 1) if total > 0 else 100.0
         
         return {
             "company_id": company_id,

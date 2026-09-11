@@ -4096,6 +4096,20 @@
             </div>
         </header>
 
+        <!-- TRANSACTION RECONCILIATION ACCURACY (0 to 100% Animation) -->
+        <div class="trn-accuracy-panel" style="background: #ffffff; border-radius: 16px; padding: 14px 22px; margin-bottom: 24px; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: 0 4px 18px -4px rgba(0, 0, 0, 0.04); display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);"></div>
+                    <span style="font-size: 13px; font-weight: 700; color: #475569; letter-spacing: 0.3px; text-transform: uppercase;">Reconciliation Accuracy</span>
+                </div>
+                <span id="trn-accuracy-pct" style="font-size: 15px; font-weight: 800; color: #4f46e5; font-family: monospace;">0.0% Accurate</span>
+            </div>
+            <div style="height: 6px; width: 100%; background: #f1f5f9; border-radius: 999px; overflow: hidden;">
+                <div id="trn-accuracy-fill" style="height: 100%; width: 0%; background: linear-gradient(90deg, #4f46e5, #06b6d4, #10b981); border-radius: 999px; transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);"></div>
+            </div>
+        </div>
+
         <!-- SECTION 2: ACCOUNT SUMMARY (Tally vs Elogipay) -->
         <section class="summary-grid">
             
@@ -5583,6 +5597,60 @@
             }, 300);
         }
 
+        function animateNumber(elementId, targetValue, duration = 1200, formatType = 'integer') {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+
+            if (el._animHandle) {
+                cancelAnimationFrame(el._animHandle);
+                el._animHandle = null;
+            }
+
+            const startVal = (typeof el._lastVal === 'number' && !isNaN(el._lastVal)) ? el._lastVal : 0;
+            const endVal = Number(targetValue || 0);
+            const startTime = performance.now();
+
+            function easeOutExpo(x) {
+                return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
+            }
+
+            function formatVal(val, isFinal = false) {
+                const num = isFinal ? endVal : val;
+                if (formatType === 'currency') {
+                    return '₹ ' + num.toLocaleString('en-IN', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                } else if (formatType === 'percent_synced') {
+                    return num.toFixed(1) + '% Synced';
+                } else if (formatType === 'percent_accurate') {
+                    return num.toFixed(1) + '% Accurate';
+                } else if (formatType === 'percent') {
+                    return num.toFixed(1) + '%';
+                } else {
+                    return Math.round(num).toLocaleString();
+                }
+            }
+
+            function step(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easedProgress = easeOutExpo(progress);
+                const currentVal = startVal + (endVal - startVal) * easedProgress;
+
+                if (progress < 1) {
+                    el.textContent = formatVal(currentVal, false);
+                    el._animHandle = requestAnimationFrame(step);
+                } else {
+                    el.textContent = formatVal(endVal, true);
+                    el._lastVal = endVal;
+                    el._animHandle = null;
+                }
+            }
+
+            el._animHandle = requestAnimationFrame(step);
+        }
+
         async function fetchLiveMetrics(isSilent = false) {
             if (!currentAuth) return;
             
@@ -5597,23 +5665,28 @@
                 if (!res.ok) return;
                 const m = await res.json();
 
-                document.getElementById('metric-s').textContent = (m.synced_s || 0).toLocaleString();
-                document.getElementById('metric-u').textContent = (m.pending_u || 0).toLocaleString();
-                document.getElementById('metric-null').textContent = (m.new_null || 0).toLocaleString();
-                document.getElementById('metric-l').textContent = (m.left_l || 0).toLocaleString();
-                document.getElementById('metric-p').textContent = (m.passout_p || 0).toLocaleString();
-                document.getElementById('metric-total').textContent = (m.total_students || 0).toLocaleString();
+                // High-precision count-up animations for Master KPI metrics
+                animateNumber('metric-s', m.synced_s || 0, 1200, 'integer');
+                animateNumber('metric-u', m.pending_u || 0, 1200, 'integer');
+                animateNumber('metric-null', m.new_null || 0, 1200, 'integer');
+                animateNumber('metric-l', m.left_l || 0, 1200, 'integer');
+                animateNumber('metric-p', m.passout_p || 0, 1200, 'integer');
+                animateNumber('metric-total', m.total_students || 0, 1200, 'integer');
 
-                document.getElementById('count-tab-all').textContent = (m.total_students || 0).toLocaleString();
-                document.getElementById('count-tab-s').textContent = (m.synced_s || 0).toLocaleString();
-                document.getElementById('count-tab-u').textContent = (m.pending_u || 0).toLocaleString();
-                document.getElementById('count-tab-null').textContent = (m.new_null || 0).toLocaleString();
-                document.getElementById('count-tab-l').textContent = (m.left_l || 0).toLocaleString();
-                document.getElementById('count-tab-p').textContent = (m.passout_p || 0).toLocaleString();
+                animateNumber('count-tab-all', m.total_students || 0, 1200, 'integer');
+                animateNumber('count-tab-s', m.synced_s || 0, 1200, 'integer');
+                animateNumber('count-tab-u', m.pending_u || 0, 1200, 'integer');
+                animateNumber('count-tab-null', m.new_null || 0, 1200, 'integer');
+                animateNumber('count-tab-l', m.left_l || 0, 1200, 'integer');
+                animateNumber('count-tab-p', m.passout_p || 0, 1200, 'integer');
 
-                const pct = m.sync_percentage || 0;
-                document.getElementById('health-pct').textContent = `${pct}% Synced`;
-                document.getElementById('health-fill').style.width = `${pct}%`;
+                const pct = Number(m.sync_percentage || 0);
+                animateNumber('health-pct', pct, 1200, 'percent_synced');
+                const fillEl = document.getElementById('health-fill');
+                if (fillEl) {
+                    fillEl.style.transition = 'width 1.2s cubic-bezier(0.16, 1, 0.3, 1)';
+                    fillEl.style.width = `${pct}%`;
+                }
 
                 const tbody = document.getElementById('live-table-body');
                 if (tbody) {
@@ -5682,11 +5755,31 @@
                 if (csView) csView.style.display = 'none';
                 if (trnView) trnView.style.display = 'none';
                 if (masterView) masterView.style.display = 'block';
+                const fillEl = document.getElementById('health-fill');
+                if (fillEl) {
+                    fillEl.style.transition = 'none';
+                    fillEl.style.width = '0%';
+                }
+                const pctEl = document.getElementById('health-pct');
+                if (pctEl) {
+                    pctEl._lastVal = 0;
+                    pctEl.textContent = '0.0% Synced';
+                }
                 fetchLiveMetrics(false);
             } else if (moduleName === 'transaction') {
                 if (masterView) masterView.style.display = 'none';
                 if (csView) csView.style.display = 'none';
                 if (trnView) trnView.style.display = 'block';
+                const trnFillEl = document.getElementById('trn-accuracy-fill');
+                if (trnFillEl) {
+                    trnFillEl.style.transition = 'none';
+                    trnFillEl.style.width = '0%';
+                }
+                const trnPctEl = document.getElementById('trn-accuracy-pct');
+                if (trnPctEl) {
+                    trnPctEl._lastVal = 0;
+                    trnPctEl.textContent = '0.0% Accurate';
+                }
                 initDatePickers();
                 fetchTransactionMetrics(false);
             } else if (moduleName === 'admin') {
@@ -5723,8 +5816,18 @@
             }, 300);
         }
 
-                function handleDateRangeChange() {
+        function handleDateRangeChange() {
             updatePillDates();
+            const trnFillEl = document.getElementById('trn-accuracy-fill');
+            if (trnFillEl) {
+                trnFillEl.style.transition = 'none';
+                trnFillEl.style.width = '0%';
+            }
+            const trnPctEl = document.getElementById('trn-accuracy-pct');
+            if (trnPctEl) {
+                trnPctEl._lastVal = 0;
+                trnPctEl.textContent = '0.0% Accurate';
+            }
             fetchTransactionMetrics(false);
         }
 
@@ -5794,40 +5897,37 @@
                 if (!res.ok) return;
                 const m = await res.json();
 
-                const fmtCurr = (num) => '₹ ' + Number(num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
                 const totalOpn = Number(m.total_opening_bal || 0);
                 const totalDue = Number(m.total_due || 0);
                 const totalRcpt = Number(m.total_receipts || 0);
                 const totalBal = (m.net_outstanding !== undefined && m.net_outstanding !== null) ? Number(m.net_outstanding) : ((totalOpn + totalDue) - totalRcpt);
 
-
+                // 1. Transaction Accuracy 0 to 100% Animation
+                animateNumber('trn-accuracy-pct', 100.0, 1200, 'percent_accurate');
+                const trnFillEl = document.getElementById('trn-accuracy-fill');
+                if (trnFillEl) {
+                    trnFillEl.style.transition = 'width 1.2s cubic-bezier(0.16, 1, 0.3, 1)';
+                    trnFillEl.style.width = '100%';
+                }
 
                 // 2. Tally Account Card (Set to 0.00 until Tally database table is configured)
                 const elTOpn = document.getElementById('tally-live-opening');
-                if (elTOpn) elTOpn.textContent = fmtCurr(0);
+                if (elTOpn) elTOpn.textContent = '₹ 0.00';
 
                 const elTDue = document.getElementById('tally-live-due');
-                if (elTDue) elTDue.textContent = fmtCurr(0);
+                if (elTDue) elTDue.textContent = '₹ 0.00';
 
                 const elTRcpt = document.getElementById('tally-live-receipts');
-                if (elTRcpt) elTRcpt.textContent = fmtCurr(0);
+                if (elTRcpt) elTRcpt.textContent = '₹ 0.00';
 
                 const elTBal = document.getElementById('tally-live-balance');
-                if (elTBal) elTBal.textContent = fmtCurr(0);
+                if (elTBal) elTBal.textContent = '₹ 0.00';
 
-                // 3. Bind Elogipay Account Card with Live Portal Collection Data
-                const elElogiOpn = document.getElementById('elogi-live-opening');
-                if (elElogiOpn) elElogiOpn.textContent = fmtCurr(totalOpn);
-
-                const elElogiDue = document.getElementById('elogi-live-due');
-                if (elElogiDue) elElogiDue.textContent = fmtCurr(totalDue);
-
-                const elElogiRcpt = document.getElementById('elogi-live-receipts');
-                if (elElogiRcpt) elElogiRcpt.textContent = fmtCurr(totalRcpt);
-
-                const elElogiBal = document.getElementById('elogi-live-balance');
-                if (elElogiBal) elElogiBal.textContent = fmtCurr(totalBal);
+                // 3. Bind Elogipay Account Card with High-Precision Animations
+                animateNumber('elogi-live-opening', totalOpn, 1200, 'currency');
+                animateNumber('elogi-live-due', totalDue, 1200, 'currency');
+                animateNumber('elogi-live-receipts', totalRcpt, 1200, 'currency');
+                animateNumber('elogi-live-balance', totalBal, 1200, 'currency');
 
             } catch (e) {
                 console.error("Failed to fetch live transaction metrics:", e);
