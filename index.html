@@ -4347,323 +4347,21 @@
                 </div>
 </div>
 
-
-
-            <div id="coming-soon-view" class="coming-soon-stage">
-
-                <div class="cs-icon-box" id="cs-icon">💳</div>
-
+            <!-- ⚙️ ADMINISTRATION MODULE VIEW -->
+            <div id="coming-soon-view" class="coming-soon-stage" style="display: none;">
+                <div class="cs-icon-box" id="cs-icon">⚙️</div>
                 <div class="cs-badge" id="cs-badge">🚀 Feature Under Active Deployment</div>
-
-                <h2 class="cs-title" id="cs-title">Transaction & Vouchers Module</h2>
-
-                <p class="cs-desc" id="cs-desc">
-
-                    Real-time automated Tally Daybook reconciliation, fee receipt vouchers, and payment transaction synchronizations will be available here soon.
-
+                <h2 class="cs-title" id="cs-module-title">Administration Module</h2>
+                <p class="cs-desc" id="cs-module-desc">
+                    System roles, user access, and enterprise configurations will be available here soon.
                 </p>
-
                 <button class="nav-module-btn" style="background: var(--brand-primary); color: #fff; padding: 10px 24px;" onclick="switchNavModule('master')">
-
                     &larr; Back to Master Dashboard
-
                 </button>
-
             </div>
 
-
-
-
-
-
-
+            <!-- 📊 MASTER MODULE VIEW (Synced, Pending, New, Left, Passed Out & Student Records) -->
             <div id="master-view">
-
-            </div>
-
-
-
-            <!-- 💳 TRANSACTION MODULE VIEW (Opening Balance, Due Total, Receipts Total, Net Outstanding) -->
-
-            <div id="transaction-view" style="display: none;">
-
-                
-
-                <!-- Financial KPI Summary Cards -->
-
-                <div class="metrics-grid">
-
-                    <!-- Total Receipts -->
-
-                    <div class="white-card metric-card card-receipts">
-
-                        <div class="metric-header">
-
-                            <span class="metric-title">Total Receipts</span>
-
-                            <span class="metric-badge badge-receipts">COLLECTED</span>
-
-                        </div>
-
-                        <div class="metric-value" style="color: #059669;" id="trn-total-receipts">₹0.00</div>
-
-                        <div class="metric-sub">
-
-                            <span id="trn-receipts-count">0 Vouchers</span>
-
-                            <span>Live Bank/Cash</span>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- Total Due (Invoices) -->
-
-                    <div class="white-card metric-card card-due">
-
-                        <div class="metric-header">
-
-                            <span class="metric-title">Total Fee Due</span>
-
-                            <span class="metric-badge badge-due">INVOICED</span>
-
-                        </div>
-
-                        <div class="metric-value" style="color: #d97706;" id="trn-total-due">₹0.00</div>
-
-                        <div class="metric-sub">
-
-                            <span id="trn-due-count">0 Invoices</span>
-
-                            <span>Debit Demands</span>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- Opening Balance -->
-
-                    <div class="white-card metric-card card-ob">
-
-                        <div class="metric-header">
-
-                            <span class="metric-title">Opening Balance</span>
-
-                            <span class="metric-badge badge-ob">CARRIED FWD</span>
-
-                        </div>
-
-                        <div class="metric-value" style="color: #0284c7;" id="trn-opening-bal">₹0.00</div>
-
-                        <div class="metric-sub">
-
-                            <span>Prior Session</span>
-
-                            <span>Opening Ledger</span>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- Advance & Discounts -->
-
-                    <div class="white-card metric-card card-adv">
-
-                        <div class="metric-header">
-
-                            <span class="metric-title">Advance / Discount</span>
-
-                            <span class="metric-badge badge-adv">ADJUSTED</span>
-
-                        </div>
-
-                        <div class="metric-value" style="color: #7c3aed;" id="trn-adv-disc">₹0.00</div>
-
-                        <div class="metric-sub">
-
-                            <span id="trn-discount-val">Disc: ₹0.00</span>
-
-                            <span id="trn-adv-val">Adv: ₹0.00</span>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- Net Outstanding Balance -->
-
-                    <div class="white-card metric-card card-out">
-
-                        <div class="metric-header">
-
-                            <span class="metric-title">Net Outstanding</span>
-
-                            <span class="metric-badge badge-out">NET BALANCE</span>
-
-                        </div>
-
-                        <div class="metric-value" style="color: #dc2626;" id="trn-net-outstanding">₹0.00</div>
-
-                        <div class="metric-sub">
-
-                            <span>(OB+Due)-(Rec+Adv+Disc)</span>
-
-                            <span>Ledger Net</span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-
-                <!-- Transaction Health Banner -->
-
-                <div class="white-card health-banner" style="margin-bottom: 24px;">
-
-                    <div class="health-info">
-
-                        <h3>Fee Reconciliation & Cashflow Health</h3>
-
-                        <p id="trn-health-desc">Real-time ledger audit across all students and fee payment heads.</p>
-
-                    </div>
-
-                    <div class="progress-box">
-
-                        <div class="progress-track">
-
-                            <div class="progress-fill" id="trn-health-fill" style="width: 0%; background: linear-gradient(90deg, #059669, #0284c7);"></div>
-
-                        </div>
-
-                        <div class="progress-labels">
-
-                            <span>Fee Collection Ratio</span>
-
-                            <span id="trn-health-pct">0% Collected</span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-
-                <!-- Transaction Vouchers Table Panel -->
-
-                <div class="white-card table-panel">
-
-                    <div class="tabs-header-bar">
-
-                        <div style="font-weight: 800; font-size: 16px; color: #0b1e42; display: flex; align-items: center; gap: 8px;">
-
-                            <span>💳</span>
-
-                            <span>Recent Payment Vouchers & Daybook Transactions</span>
-
-                        </div>
-
-                        <div class="search-box">
-
-                            <span class="search-icon">🔍</span>
-
-                            <input type="text" class="search-input" placeholder="Search Voucher No, Txn ID, Remarks..." oninput="handleTrnSearch(this.value)">
-
-                        </div>
-
-                    </div>
-
-
-
-                    <div class="table-container">
-
-                        <table class="data-table">
-
-                            <thead>
-
-                                <tr>
-
-                                    <th>VOUCHER NO</th>
-
-                                    <th>TRANSACTION ID</th>
-
-                                    <th>PAYMENT DATE</th>
-
-                                    <th>AMOUNT (₹)</th>
-
-                                    <th>PAYMENT MODE</th>
-
-                                    <th>TALLY POST STATUS</th>
-
-                                    <th>REMARKS</th>
-
-                                </tr>
-
-                            </thead>
-
-                            <tbody id="trn-table-body">
-
-                                <tr>
-
-                                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">
-
-                                        Loading transaction records...
-
-                                    </td>
-
-                                </tr>
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-
-
-            </div>
-
-
-
-            <div id="coming-soon-view" class="coming-soon-stage">
-
-                <div class="cs-icon-box" id="cs-icon">💳</div>
-
-                <div class="cs-badge" id="cs-badge">🚀 Feature Under Active Deployment</div>
-
-                <h2 class="cs-title" id="cs-title">Transaction & Vouchers Module</h2>
-
-                <p class="cs-desc" id="cs-desc">
-
-                    Real-time automated Tally Daybook reconciliation, fee receipt vouchers, and payment transaction synchronizations will be available here soon.
-
-                </p>
-
-                <button class="nav-module-btn" style="background: var(--brand-primary); color: #fff; padding: 10px 24px;" onclick="switchNavModule('master')">
-
-                    &larr; Back to Master Dashboard
-
-                </button>
-
-            </div>
-
-
-
-
-
-
 
             <!-- Metrics Cards Grid (Clickable to switch tab) -->
 
@@ -5207,7 +4905,8 @@
 
         </div>
 
-
+            </div>
+            <!-- End of master-view -->
 
     </div>
 
@@ -5905,7 +5604,7 @@
             const badgeIcon = currentAuth.institute_type === 'college' ? '🎓' : '🏫';
             document.getElementById('nav-company-details').textContent = `${badgeIcon} ${currentAuth.company_name} [${currentAuth.company_code}]`;
 
-            fetchLiveMetrics(false);
+            switchNavModule('master');
             if (pollInterval) clearInterval(pollInterval);
             pollInterval = setInterval(() => {
                 if (currentNavModule === 'master') {
