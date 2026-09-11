@@ -172,7 +172,7 @@ def handle_metrics(params):
 
         cur.execute(f"""
             SELECT 
-                NVL(SUM(CASE WHEN INVOICE_TYPE IN ('FE', 'FI') THEN AMOUNT ELSE 0 END), 0) AS TOTAL_DUE,
+                NVL(SUM(CASE WHEN INVOICE_TYPE <> 'OB' THEN AMOUNT ELSE 0 END), 0) AS TOTAL_DUE,
                 NVL(SUM(CASE WHEN INVOICE_TYPE = 'OB' THEN AMOUNT ELSE 0 END), 0) AS RAW_OB,
                 NVL(SUM(CASE WHEN INVOICE_TYPE = 'DI' THEN AMOUNT ELSE 0 END), 0) AS TOTAL_DISCOUNT,
                 NVL(SUM(CASE WHEN INVOICE_TYPE = 'AD' THEN AMOUNT ELSE 0 END), 0) AS ADVANCE_ADJUSTED,
@@ -240,12 +240,12 @@ def handle_metrics(params):
                 OPENING_BAL AS (
                   SELECT
                     FD.ENRL_NO,
-                    SUM(CASE WHEN FD.INVOICE_TYPE IN ('FE', 'OB', 'Bounce', 'REFUND') THEN NVL(FD.AMOUNT, 0) ELSE 0 END)
+                    SUM(CASE WHEN FD.INVOICE_TYPE = 'OB' OR FD.INVOICE_TYPE IN ('FE', 'Bounce', 'REFUND') THEN NVL(FD.AMOUNT, 0) ELSE 0 END)
                     - SUM(CASE WHEN FD.INVOICE_TYPE IN ('DI', 'AD') THEN NVL(FD.AMOUNT, 0) ELSE 0 END)
                     - SUM(NVL(P.RECEIPT, 0)) AS OPENING_AMOUNT
                   FROM DistinctFD FD
                   LEFT JOIN PaymentTotal P ON FD.INVOICE_NO = P.INVOICE_NO
-                  WHERE TRUNC(FD.INVOICE_DATE) < TO_DATE(:cutoff, 'YYYY-MM-DD')
+                  WHERE (FD.INVOICE_TYPE = 'OB' OR TRUNC(FD.INVOICE_DATE) < TO_DATE(:cutoff, 'YYYY-MM-DD'))
                   GROUP BY FD.ENRL_NO
                 )
                 SELECT NVL(SUM(OB.OPENING_AMOUNT), 0)
