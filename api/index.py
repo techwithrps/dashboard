@@ -110,6 +110,28 @@ def handle_metrics(params):
     module_tab = params.get("module", ["master"])[0].lower()
     tab_filter = params.get("tab", ["all"])[0].lower()
     search_q = params.get("q", [""])[0].strip().upper()
+    raw_from_date = params.get("from_date", [""])[0].strip()
+    raw_to_date = params.get("to_date", [""])[0].strip()
+
+    def parse_date_param(d_str):
+        if not d_str:
+            return None
+        d_str = d_str.strip()
+        if len(d_str) == 10 and d_str[4] == '-' and d_str[7] == '-':
+            return d_str
+        parts = d_str.replace('/', '-').split('-')
+        if len(parts) == 3:
+            try:
+                if len(parts[0]) == 4:
+                    return f"{int(parts[0]):04d}-{int(parts[1]):02d}-{int(parts[2]):02d}"
+                elif len(parts[2]) == 4:
+                    return f"{int(parts[2]):04d}-{int(parts[1]):02d}-{int(parts[0]):02d}"
+            except Exception:
+                return None
+        return None
+
+    clean_from_date = parse_date_param(raw_from_date)
+    clean_to_date = parse_date_param(raw_to_date)
     
     schema = COLLEGE_DB_USER if institute_type == "college" else SCHOOL_DB_USER
     conn = None
@@ -137,7 +159,17 @@ def handle_metrics(params):
         """, {"cid": company_id})
         row = cur.fetchone()
         
-        # 3. Financial Totals for Transaction Module (Exact SP_SCHOOL_OUTSTANDING_ha ERP Formula)
+        # 3. Financial Totals for Transaction Module (Dynamic Date Range Supported)
+        where_fee = ["COMPANY_ID = :cid"]
+        fee_params = {"cid": company_id}
+        if clean_from_date:
+            where_fee.append("TRUNC(INVOICE_DATE) >= TO_DATE(:fdate, 'YYYY-MM-DD')")
+            fee_params["fdate"] = clean_from_date
+        if clean_to_date:
+            where_fee.append("TRUNC(INVOICE_DATE) <= TO_DATE(:tdate, 'YYYY-MM-DD')")
+            fee_params["tdate"] = clean_to_date
+        where_fee_sql = " AND ".join(where_fee)
+
         cur.execute(f"""
             SELECT 
                 NVL(SUM(CASE WHEN INVOICE_TYPE IN ('FE', 'FI') THEN AMOUNT ELSE 0 END), 0) AS TOTAL_DUE,
@@ -148,17 +180,27 @@ def handle_metrics(params):
                 NVL(SUM(CASE WHEN INVOICE_TYPE = 'Bounce' THEN AMOUNT ELSE 0 END), 0) AS TOTAL_BOUNCE,
                 COUNT(DISTINCT INVOICE_NO) AS TOTAL_INVOICES
             FROM {schema}.STUDENT_FEE_DETAILS
-            WHERE COMPANY_ID = :cid
-        """, {"cid": company_id})
+            WHERE {where_fee_sql}
+        """, fee_params)
         fee_totals = cur.fetchone()
         
+        where_pay = ["COMPANY_ID = :cid"]
+        pay_params = {"cid": company_id}
+        if clean_from_date:
+            where_pay.append("TRUNC(PAYMENT_DATE) >= TO_DATE(:fdate, 'YYYY-MM-DD')")
+            pay_params["fdate"] = clean_from_date
+        if clean_to_date:
+            where_pay.append("TRUNC(PAYMENT_DATE) <= TO_DATE(:tdate, 'YYYY-MM-DD')")
+            pay_params["tdate"] = clean_to_date
+        where_pay_sql = " AND ".join(where_pay)
+
         cur.execute(f"""
             SELECT 
                 NVL(SUM(AMOUNT), 0) AS TOTAL_RECEIPTS,
                 COUNT(1) AS TOTAL_PAYMENT_VOUCHERS
             FROM {schema}.STUDENT_FEE_PAYMENT
-            WHERE COMPANY_ID = :cid
-        """, {"cid": company_id})
+            WHERE {where_pay_sql}
+        """, pay_params)
         pay_totals = cur.fetchone()
 
         total_due_amt = float(fee_totals[0] or 0)
@@ -172,8 +214,9 @@ def handle_metrics(params):
         total_receipts_amt = float(pay_totals[0] or 0)
         total_vouchers_count = int(pay_totals[1] or 0)
 
-        # Calculate exact Opening Balance using ERP Session Start Cutoff (01/04 of current fiscal year)
+        # Calculate exact Opening Balance using cutoff (prior to from_date, default 2026-04-01)
         total_ob_amt = raw_ob_amt
+        ob_cutoff = clean_from_date if clean_from_date else "2026-04-01"
         try:
             cur.execute(f"""
                 WITH DistinctFD AS (
@@ -202,12 +245,12 @@ def handle_metrics(params):
                     - SUM(NVL(P.RECEIPT, 0)) AS OPENING_AMOUNT
                   FROM DistinctFD FD
                   LEFT JOIN PaymentTotal P ON FD.INVOICE_NO = P.INVOICE_NO
-                  WHERE FD.INVOICE_DATE < TO_DATE('01/04/2026', 'DD/MM/YYYY')
+                  WHERE TRUNC(FD.INVOICE_DATE) < TO_DATE(:cutoff, 'YYYY-MM-DD')
                   GROUP BY FD.ENRL_NO
                 )
                 SELECT NVL(SUM(OB.OPENING_AMOUNT), 0)
                 FROM OPENING_BAL OB
-            """, {"cid": company_id})
+            """, {"cid": company_id, "cutoff": ob_cutoff})
             sp_ob_row = cur.fetchone()
             if sp_ob_row and sp_ob_row[0] is not None:
                 calc_val = float(sp_ob_row[0])
@@ -329,6 +372,8 @@ def handle_metrics(params):
             "net_outstanding": net_outstanding_balance,
             "total_invoices_count": total_invoices_count,
             "total_vouchers_count": total_vouchers_count,
+            "from_date": clean_from_date or "",
+            "to_date": clean_to_date or "",
             "transaction_records": transaction_records
         }, 200
     except Exception as e:

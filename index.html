@@ -3162,44 +3162,74 @@
             color: var(--text-muted);
         }
 
-        .date-picker-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: #ffffff;
-            border: 1.5px solid #e2e8f0;
-            padding: 10px 16px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #334155;
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-            transition: all 0.2s ease;
+        /* ---------------- DUAL DATE FILTER STYLES ---------------- */
+        .date-filter-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 18px;
+        }
+
+        .date-filter-col {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .date-filter-label {
+            font-size: 15px;
+            font-weight: 700;
+            color: #52637a;
+            letter-spacing: -0.2px;
+        }
+
+        .date-input-field-wrap {
             position: relative;
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
         }
 
-        .date-picker-btn:hover {
-            border-color: #cbd5e1;
-            background: #f8fafc;
+        .date-input-field-wrap:hover {
+            border-color: #94a3b8;
         }
 
-        .date-picker-btn svg {
-            width: 16px;
-            height: 16px;
-            color: #64748b;
+        .date-input-field-wrap:focus-within {
+            border-color: #0284c7;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
         }
 
-        .date-picker-input {
-            position: absolute;
-            opacity: 0;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        .date-range-control {
+            border: none;
+            outline: none;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: #1e293b;
+            padding: 9px 12px;
+            width: 170px;
+            background: #ffffff;
             cursor: pointer;
         }
 
+        .date-range-control::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.75;
+            padding: 9px 12px;
+            margin-right: 0px;
+            background-color: #f1f5f9;
+            border-left: 1px solid #cbd5e1;
+            transition: all 0.15s ease;
+        }
+
+        .date-range-control::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+            background-color: #e2e8f0;
+        }
         /* ---------------- SECTION 1: KPI CARDS ---------------- */
         .kpi-grid {
             display: grid;
@@ -4048,17 +4078,21 @@
                 <p>Overview of your account status</p>
             </div>
 
-            <div class="date-picker-btn" onclick="document.getElementById('actual-date-input').showPicker()">
-                <!-- Calendar Icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
-                </svg>
-                <span id="display-selected-date">10 Sep 2026</span>
-                <!-- Chevron Down -->
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 14px; height: 14px;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                </svg>
-                <input type="date" id="actual-date-input" class="date-picker-input" value="2026-09-10" onchange="updateDateDisplay(this.value)">
+            <!-- DUAL DATE FILTER: FROM DATE & TO DATE -->
+            <div class="date-filter-container">
+                <div class="date-filter-col">
+                    <label class="date-filter-label" for="filter-from-date">From Date</label>
+                    <div class="date-input-field-wrap">
+                        <input type="date" id="filter-from-date" class="date-range-control" onchange="handleDateRangeChange()">
+                    </div>
+                </div>
+
+                <div class="date-filter-col">
+                    <label class="date-filter-label" for="filter-to-date">To Date</label>
+                    <div class="date-input-field-wrap">
+                        <input type="date" id="filter-to-date" class="date-range-control" onchange="handleDateRangeChange()">
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -5653,6 +5687,7 @@
                 if (masterView) masterView.style.display = 'none';
                 if (csView) csView.style.display = 'none';
                 if (trnView) trnView.style.display = 'block';
+                initDatePickers();
                 fetchTransactionMetrics(false);
             } else if (moduleName === 'admin') {
                 if (masterView) masterView.style.display = 'none';
@@ -5688,10 +5723,73 @@
             }, 300);
         }
 
-                async function fetchTransactionMetrics(isSilent = false) {
+                function handleDateRangeChange() {
+            updatePillDates();
+            fetchTransactionMetrics(false);
+        }
+
+        function updatePillDates() {
+            const elFrom = document.getElementById('filter-from-date');
+            const elTo = document.getElementById('filter-to-date');
+            const fVal = elFrom ? elFrom.value : '';
+            const tVal = elTo ? elTo.value : '';
+            
+            const fmtDate = (dStr) => {
+                if (!dStr) return '';
+                const parts = dStr.split('-');
+                if (parts.length === 3) {
+                    const d = new Date(parts[0], parts[1] - 1, parts[2]);
+                    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                }
+                return dStr;
+            };
+
+            let label = 'Current Session';
+            if (fVal && tVal) {
+                label = `${fmtDate(fVal)} to ${fmtDate(tVal)}`;
+            } else if (tVal) {
+                label = `As on ${fmtDate(tVal)}`;
+            } else if (fVal) {
+                label = `From ${fmtDate(fVal)}`;
+            }
+
+            const pillTally = document.getElementById('tally-date-pill');
+            if (pillTally) pillTally.textContent = label;
+            const pillElogi = document.getElementById('elogipay-date-pill');
+            if (pillElogi) pillElogi.textContent = label;
+        }
+
+        function initDatePickers() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const todayStr = `${yyyy}-${mm}-${dd}`;
+            
+            let fyYear = yyyy;
+            if (today.getMonth() < 3) {
+                fyYear = yyyy - 1;
+            }
+            const fyStartStr = `${fyYear}-04-01`;
+
+            const elFrom = document.getElementById('filter-from-date');
+            const elTo = document.getElementById('filter-to-date');
+            if (elFrom && !elFrom.value) elFrom.value = fyStartStr;
+            if (elTo && !elTo.value) elTo.value = todayStr;
+            updatePillDates();
+        }
+
+        async function fetchTransactionMetrics(isSilent = false) {
             if (!currentAuth) return;
             try {
-                const url = `/api/metrics?company_id=${currentAuth.company_id}&institute_type=${currentAuth.institute_type}&module=transaction&q=${encodeURIComponent(trnSearchQuery)}`;
+                const elFrom = document.getElementById('filter-from-date');
+                const elTo = document.getElementById('filter-to-date');
+                const fVal = elFrom ? elFrom.value : '';
+                const tVal = elTo ? elTo.value : '';
+
+                let url = `/api/metrics?company_id=${currentAuth.company_id}&institute_type=${currentAuth.institute_type}&module=transaction&q=${encodeURIComponent(trnSearchQuery)}`;
+                if (fVal) url += `&from_date=${encodeURIComponent(fVal)}`;
+                if (tVal) url += `&to_date=${encodeURIComponent(tVal)}`;
                 const res = await fetch(url);
                 if (!res.ok) return;
                 const m = await res.json();
