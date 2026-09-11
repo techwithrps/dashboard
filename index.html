@@ -4130,7 +4130,7 @@
                             </div>
                             <span class="row-label">Opening</span>
                         </div>
-                        <span class="row-value" id="tally-live-opening">₹ 0</span>
+                        <span class="row-value" id="tally-live-opening">₹ 0.00</span>
                     </div>
 
                     <!-- Due's -->
@@ -4143,7 +4143,7 @@
                             </div>
                             <span class="row-label">Due's</span>
                         </div>
-                        <span class="row-value" id="tally-live-due">₹ 0</span>
+                        <span class="row-value" id="tally-live-due">₹ 0.00</span>
                     </div>
 
                     <!-- Receipts -->
@@ -4156,7 +4156,7 @@
                             </div>
                             <span class="row-label">Receipts</span>
                         </div>
-                        <span class="row-value" id="tally-live-receipts">₹ 0</span>
+                        <span class="row-value" id="tally-live-receipts">₹ 0.00</span>
                     </div>
 
                     <!-- Balance (Mint Highlighted) -->
@@ -4169,7 +4169,7 @@
                             </div>
                             <span class="row-label">Balance</span>
                         </div>
-                        <span class="row-value" id="tally-live-balance">₹ 0</span>
+                        <span class="row-value" id="tally-live-balance">₹ 0.00</span>
                     </div>
                 </div>
             </div>
@@ -4244,103 +4244,7 @@
 
         </section>
 
-        <!-- SECTION 3: COMPARISON BAR CHART -->
-        <section class="chart-card">
-            <div class="chart-header">
-                <div class="chart-title-box">
-                    <div class="chart-icon-box">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
-                        </svg>
-                    </div>
-                    <div class="chart-titles">
-                        <h2>Tally vs Elogipay</h2>
-                        <p>Side by side comparison</p>
-                    </div>
-                </div>
 
-                <div class="chart-legend">
-                    <div class="legend-item">
-                        <span class="legend-dot tally-dot"></span>
-                        <span>Tally</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-dot elogipay-dot"></span>
-                        <span>Elogipay</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Grouped Bars Graphic -->
-            <div class="chart-stage" id="chart-stage-container">
-                
-                <!-- Category 1: Opening -->
-                <div class="chart-group-col">
-                    <div class="bars-pair">
-                        <div class="bar-wrap">
-                            <span class="bar-tooltip-val">₹ 1,25,000</span>
-                            <div class="chart-bar bar-tally" style="height: 145px;" title="Tally Opening: ₹ 1,25,000"></div>
-                        </div>
-                        <div class="bar-wrap">
-                            <span class="bar-tooltip-val">₹ 98,000</span>
-                            <div class="chart-bar bar-elogipay" style="height: 114px;" title="Elogipay Opening: ₹ 98,000"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Category 2: Due's -->
-                <div class="chart-group-col">
-                    <div class="bars-pair">
-                        <div class="bar-wrap">
-                            <span class="bar-tooltip-val">₹ 35,000</span>
-                            <div class="chart-bar bar-tally" style="height: 41px;" title="Tally Due's: ₹ 35,000"></div>
-                        </div>
-                        <div class="bar-wrap">
-                            <span class="bar-tooltip-val">₹ 22,000</span>
-                            <div class="chart-bar bar-elogipay" style="height: 26px;" title="Elogipay Due's: ₹ 22,000"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Category 3: Receipts -->
-                <div class="chart-group-col">
-                    <div class="bars-pair">
-                        <div class="bar-wrap">
-                            <span class="bar-tooltip-val">₹ 50,000</span>
-                            <div class="chart-bar bar-tally" style="height: 58px;" title="Tally Receipts: ₹ 50,000"></div>
-                        </div>
-                        <div class="bar-wrap">
-                            <span class="bar-tooltip-val">₹ 40,000</span>
-                            <div class="chart-bar bar-elogipay" style="height: 47px;" title="Elogipay Receipts: ₹ 40,000"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Category 4: Balance -->
-                <div class="chart-group-col">
-                    <div class="bars-pair">
-                        <div class="bar-wrap">
-                            <span class="bar-tooltip-val">₹ 1,10,000</span>
-                            <div class="chart-bar bar-tally" style="height: 128px;" title="Tally Balance: ₹ 1,10,000"></div>
-                        </div>
-                        <div class="bar-wrap">
-                            <span class="bar-tooltip-val">₹ 80,000</span>
-                            <div class="chart-bar bar-elogipay" style="height: 93px;" title="Elogipay Balance: ₹ 80,000"></div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Category X-Axis Labels -->
-            <div class="chart-x-labels">
-                <div class="x-label-item">Opening</div>
-                <div class="x-label-item">Due's</div>
-                <div class="x-label-item">Receipts</div>
-                <div class="x-label-item">Balance</div>
-            </div>
-
-        </section>
 
     
 </div>
@@ -5853,18 +5757,18 @@
                 const elKpiBal = document.getElementById('kpi-live-balance');
                 if (elKpiBal) elKpiBal.textContent = fmtCurr(totalBal);
 
-                // 2. Bind Tally Account Card with Live Data
+                // 2. Tally Account Card (Set to 0.00 until Tally database table is configured)
                 const elTOpn = document.getElementById('tally-live-opening');
-                if (elTOpn) elTOpn.textContent = fmtCurr(totalOpn);
+                if (elTOpn) elTOpn.textContent = fmtCurr(0);
 
                 const elTDue = document.getElementById('tally-live-due');
-                if (elTDue) elTDue.textContent = fmtCurr(totalDue);
+                if (elTDue) elTDue.textContent = fmtCurr(0);
 
                 const elTRcpt = document.getElementById('tally-live-receipts');
-                if (elTRcpt) elTRcpt.textContent = fmtCurr(totalRcpt);
+                if (elTRcpt) elTRcpt.textContent = fmtCurr(0);
 
                 const elTBal = document.getElementById('tally-live-balance');
-                if (elTBal) elTBal.textContent = fmtCurr(totalBal);
+                if (elTBal) elTBal.textContent = fmtCurr(0);
 
                 // 3. Bind Elogipay Account Card with Live Portal Collection Data
                 const elElogiOpn = document.getElementById('elogi-live-opening');
@@ -5879,67 +5783,6 @@
                 const elElogiBal = document.getElementById('elogi-live-balance');
                 if (elElogiBal) elElogiBal.textContent = fmtCurr(totalBal);
 
-                // 4. Update Comparison Chart Dynamic Heights and Tooltips
-                const maxVal = Math.max(totalOpn, totalDue, totalRcpt, Math.abs(totalBal), 1);
-                const scaleHeight = (val) => Math.max(12, Math.round((Math.abs(val) / maxVal) * 160));
-
-                const chartStage = document.getElementById('chart-stage-container');
-                if (chartStage) {
-                    chartStage.innerHTML = `
-                        <!-- Opening -->
-                        <div class="chart-group-col">
-                            <div class="bars-pair">
-                                <div class="bar-wrap">
-                                    <span class="bar-tooltip-val">${fmtCurr(totalOpn)}</span>
-                                    <div class="chart-bar bar-tally" style="height: ${scaleHeight(totalOpn)}px;" title="Tally Opening: ${fmtCurr(totalOpn)}"></div>
-                                </div>
-                                <div class="bar-wrap">
-                                    <span class="bar-tooltip-val">${fmtCurr(totalOpn)}</span>
-                                    <div class="chart-bar bar-elogipay" style="height: ${scaleHeight(totalOpn)}px;" title="Elogipay Opening: ${fmtCurr(totalOpn)}"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Due's -->
-                        <div class="chart-group-col">
-                            <div class="bars-pair">
-                                <div class="bar-wrap">
-                                    <span class="bar-tooltip-val">${fmtCurr(totalDue)}</span>
-                                    <div class="chart-bar bar-tally" style="height: ${scaleHeight(totalDue)}px;" title="Tally Due's: ${fmtCurr(totalDue)}"></div>
-                                </div>
-                                <div class="bar-wrap">
-                                    <span class="bar-tooltip-val">${fmtCurr(totalDue)}</span>
-                                    <div class="chart-bar bar-elogipay" style="height: ${scaleHeight(totalDue)}px;" title="Elogipay Due's: ${fmtCurr(totalDue)}"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Receipts -->
-                        <div class="chart-group-col">
-                            <div class="bars-pair">
-                                <div class="bar-wrap">
-                                    <span class="bar-tooltip-val">${fmtCurr(totalRcpt)}</span>
-                                    <div class="chart-bar bar-tally" style="height: ${scaleHeight(totalRcpt)}px;" title="Tally Receipts: ${fmtCurr(totalRcpt)}"></div>
-                                </div>
-                                <div class="bar-wrap">
-                                    <span class="bar-tooltip-val">${fmtCurr(totalRcpt)}</span>
-                                    <div class="chart-bar bar-elogipay" style="height: ${scaleHeight(totalRcpt)}px;" title="Elogipay Receipts: ${fmtCurr(totalRcpt)}"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Balance -->
-                        <div class="chart-group-col">
-                            <div class="bars-pair">
-                                <div class="bar-wrap">
-                                    <span class="bar-tooltip-val">${fmtCurr(totalBal)}</span>
-                                    <div class="chart-bar bar-tally" style="height: ${scaleHeight(totalBal)}px;" title="Tally Balance: ${fmtCurr(totalBal)}"></div>
-                                </div>
-                                <div class="bar-wrap">
-                                    <span class="bar-tooltip-val">${fmtCurr(totalBal)}</span>
-                                    <div class="chart-bar bar-elogipay" style="height: ${scaleHeight(totalBal)}px;" title="Elogipay Balance: ${fmtCurr(totalBal)}"></div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
             } catch (e) {
                 console.error("Failed to fetch live transaction metrics:", e);
             }
