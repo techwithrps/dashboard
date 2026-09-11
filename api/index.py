@@ -159,108 +159,93 @@ def handle_metrics(params):
         """, {"cid": company_id})
         row = cur.fetchone()
         
-        # 3. Financial Totals for Transaction Module (Dynamic Date Range Supported)
-        where_fee = ["COMPANY_ID = :cid"]
-        fee_params = {"cid": company_id}
-        if clean_from_date:
-            where_fee.append("TRUNC(INVOICE_DATE) >= TO_DATE(:fdate, 'YYYY-MM-DD')")
-            fee_params["fdate"] = clean_from_date
-        if clean_to_date:
-            where_fee.append("TRUNC(INVOICE_DATE) <= TO_DATE(:tdate, 'YYYY-MM-DD')")
-            fee_params["tdate"] = clean_to_date
-        where_fee_sql = " AND ".join(where_fee)
+        # 3. Financial Totals for Transaction Module (Exact eLOGiPay ERP Procedure Calculation)
+        f_date = clean_from_date if clean_from_date else "2026-04-01"
+        t_date = clean_to_date if clean_to_date else "2026-09-11"
 
         cur.execute(f"""
-            SELECT 
-                NVL(SUM(CASE WHEN INVOICE_TYPE <> 'OB' THEN AMOUNT ELSE 0 END), 0) AS TOTAL_DUE,
-                NVL(SUM(CASE WHEN INVOICE_TYPE = 'OB' THEN AMOUNT ELSE 0 END), 0) AS RAW_OB,
-                NVL(SUM(CASE WHEN INVOICE_TYPE = 'DI' THEN AMOUNT ELSE 0 END), 0) AS TOTAL_DISCOUNT,
-                NVL(SUM(CASE WHEN INVOICE_TYPE = 'AD' THEN AMOUNT ELSE 0 END), 0) AS ADVANCE_ADJUSTED,
-                NVL(SUM(CASE WHEN INVOICE_TYPE = 'REFUND' THEN AMOUNT ELSE 0 END), 0) AS TOTAL_REFUND,
-                NVL(SUM(CASE WHEN INVOICE_TYPE = 'Bounce' THEN AMOUNT ELSE 0 END), 0) AS TOTAL_BOUNCE,
-                COUNT(DISTINCT INVOICE_NO) AS TOTAL_INVOICES
-            FROM {schema}.STUDENT_FEE_DETAILS
-            WHERE {where_fee_sql}
-        """, fee_params)
-        fee_totals = cur.fetchone()
-        
-        where_pay = ["COMPANY_ID = :cid"]
-        pay_params = {"cid": company_id}
-        if clean_from_date:
-            where_pay.append("TRUNC(PAYMENT_DATE) >= TO_DATE(:fdate, 'YYYY-MM-DD')")
-            pay_params["fdate"] = clean_from_date
-        if clean_to_date:
-            where_pay.append("TRUNC(PAYMENT_DATE) <= TO_DATE(:tdate, 'YYYY-MM-DD')")
-            pay_params["tdate"] = clean_to_date
-        where_pay_sql = " AND ".join(where_pay)
+            WITH STUDENT_INFO AS (
+              SELECT SM.STUDENT_ID, SM.ENRL_NO
+              FROM {schema}.STUDENT_MASTER_DATA SM
+              LEFT JOIN {schema}.STUDENT_CLASS_MASTER CM ON CM.STUDENT_CLASS_ID = SM.STUDENT_CLASS_ID
+              WHERE SM.STUDENT_STATUS IS NULL AND SM.ACTIVE_STATUS_ID = 1 AND SM.COMPANY_ID = :cid
+            ),
+            DistinctFD AS (
+              SELECT DISTINCT ENRL_NO, INVOICE_NO, INVOICE_TYPE, INVOICE_DATE, AMOUNT
+              FROM {schema}.STUDENT_FEE_DETAILS
+              WHERE COMPANY_ID = :cid
+            ),
+            PaymentTotal AS (
+              SELECT INVOICE_NO, SUM(NVL(AMOUNT, 0)) AS RECEIPT
+              FROM {schema}.STUDENT_FEE_PAYMENT_DTLS
+              WHERE REMARKS NOT IN ('Advance')
+              GROUP BY INVOICE_NO
+            ),
+            OPENING_BAL AS (
+              SELECT FD.ENRL_NO,
+                SUM(CASE WHEN FD.INVOICE_TYPE IN ('FE', 'OB', 'Bounce', 'REFUND') THEN NVL(FD.AMOUNT, 0) ELSE 0 END)
+                - SUM(CASE WHEN FD.INVOICE_TYPE IN ('DI', 'AD') THEN NVL(FD.AMOUNT, 0) ELSE 0 END)
+                - SUM(NVL(P.RECEIPT, 0)) AS OPENING_AMOUNT
+              FROM DistinctFD FD
+              LEFT JOIN PaymentTotal P ON FD.INVOICE_NO = P.INVOICE_NO
+              WHERE FD.INVOICE_DATE < TO_DATE(:fdate, 'YYYY-MM-DD')
+              GROUP BY FD.ENRL_NO
+            ),
+            CURRENT_PERIOD AS (
+              SELECT FD.ENRL_NO,
+                SUM(CASE WHEN FD.INVOICE_TYPE IN ('FE', 'OB', 'Bounce') THEN NVL(FD.AMOUNT, 0) ELSE 0 END) AS DUE_AMOUNT,
+                SUM(CASE WHEN FD.INVOICE_TYPE = 'DI' THEN NVL(FD.AMOUNT, 0) ELSE 0 END) AS DISCOUNT,
+                SUM(CASE WHEN FD.INVOICE_TYPE = 'REFUND' THEN NVL(FD.AMOUNT, 0) ELSE 0 END) AS REFUND_AMOUNT,
+                SUM(CASE WHEN FD.INVOICE_TYPE = 'AD' THEN NVL(FD.AMOUNT, 0) ELSE 0 END) AS ADVANCE_AMOUNT,
+                SUM(NVL(P.RECEIPT, 0)) AS RECEIPT
+              FROM DistinctFD FD
+              LEFT JOIN PaymentTotal P ON FD.INVOICE_NO = P.INVOICE_NO
+              WHERE FD.INVOICE_DATE BETWEEN TO_DATE(:fdate, 'YYYY-MM-DD') AND TO_DATE(:tdate, 'YYYY-MM-DD')
+              GROUP BY FD.ENRL_NO
+            ),
+            STUDENT_TOTALS AS (
+              SELECT SI.ENRL_NO,
+                TRUNC(MAX(NVL(OB.OPENING_AMOUNT, 0)), 2) AS OPENING_BALANCE,
+                TRUNC(MAX(NVL(CP.DUE_AMOUNT, 0)), 2) AS DUE_AMOUNT,
+                TRUNC(MAX(NVL(CP.REFUND_AMOUNT, 0)), 2) AS REFUND_AMOUNT,
+                TRUNC(MAX(NVL(CP.ADVANCE_AMOUNT, 0)), 2) AS ADVANCE_ADJUSTED,
+                TRUNC(MAX(NVL(CP.DISCOUNT, 0)), 2) AS DISCOUNT,
+                TRUNC(MAX(NVL(CP.RECEIPT, 0)), 2) AS PAYMENT
+              FROM STUDENT_INFO SI
+              LEFT JOIN OPENING_BAL OB ON OB.ENRL_NO = SI.ENRL_NO
+              LEFT JOIN CURRENT_PERIOD CP ON CP.ENRL_NO = SI.ENRL_NO
+              WHERE EXISTS (
+                SELECT 1 FROM DistinctFD FD
+                WHERE FD.ENRL_NO = SI.ENRL_NO
+                  AND (FD.INVOICE_DATE < TO_DATE(:fdate, 'YYYY-MM-DD')
+                       OR FD.INVOICE_DATE BETWEEN TO_DATE(:fdate, 'YYYY-MM-DD') AND TO_DATE(:tdate, 'YYYY-MM-DD'))
+              )
+              GROUP BY SI.ENRL_NO
+            )
+            SELECT
+              NVL(SUM(OPENING_BALANCE), 0),
+              NVL(SUM(DUE_AMOUNT), 0),
+              NVL(SUM(PAYMENT), 0),
+              NVL(SUM(DISCOUNT), 0),
+              NVL(SUM(ADVANCE_ADJUSTED), 0),
+              NVL(SUM(REFUND_AMOUNT), 0)
+            FROM STUDENT_TOTALS
+        """, {"cid": company_id, "fdate": f_date, "tdate": t_date})
+        fin_row = cur.fetchone() or (0, 0, 0, 0, 0, 0)
+        total_ob_amt = float(fin_row[0] or 0)
+        total_due_amt = float(fin_row[1] or 0)
+        total_receipts_amt = float(fin_row[2] or 0)
+        total_discount_amt = float(fin_row[3] or 0)
+        total_adv_adj_amt = float(fin_row[4] or 0)
+        total_refund_amt = float(fin_row[5] or 0)
 
-        cur.execute(f"""
-            SELECT 
-                NVL(SUM(AMOUNT), 0) AS TOTAL_RECEIPTS,
-                COUNT(1) AS TOTAL_PAYMENT_VOUCHERS
-            FROM {schema}.STUDENT_FEE_PAYMENT
-            WHERE {where_pay_sql}
-        """, pay_params)
-        pay_totals = cur.fetchone()
+        net_outstanding_balance = (total_due_amt + total_ob_amt + total_refund_amt) - (total_discount_amt + total_adv_adj_amt + total_receipts_amt)
 
-        total_due_amt = float(fee_totals[0] or 0)
-        raw_ob_amt = float(fee_totals[1] or 0)
-        total_discount_amt = float(fee_totals[2] or 0)
-        total_adv_adj_amt = float(fee_totals[3] or 0)
-        total_refund_amt = float(fee_totals[4] or 0)
-        total_bounce_amt = float(fee_totals[5] or 0)
-        total_invoices_count = int(fee_totals[6] or 0)
-        
-        total_receipts_amt = float(pay_totals[0] or 0)
-        total_vouchers_count = int(pay_totals[1] or 0)
+        cur.execute(f"SELECT COUNT(DISTINCT INVOICE_NO) FROM {schema}.STUDENT_FEE_DETAILS WHERE COMPANY_ID = :cid", {"cid": company_id})
+        total_invoices_count = int(cur.fetchone()[0] or 0)
 
-        # Calculate exact Opening Balance using cutoff (prior to from_date, default 2026-04-01)
-        total_ob_amt = raw_ob_amt
-        ob_cutoff = clean_from_date if clean_from_date else "2026-04-01"
-        try:
-            cur.execute(f"""
-                WITH DistinctFD AS (
-                  SELECT DISTINCT
-                    ENRL_NO,
-                    INVOICE_NO,
-                    INVOICE_TYPE,
-                    INVOICE_DATE,
-                    AMOUNT
-                  FROM {schema}.STUDENT_FEE_DETAILS
-                  WHERE COMPANY_ID = :cid
-                ),
-                PaymentTotal AS (
-                  SELECT
-                    INVOICE_NO,
-                    SUM(NVL(AMOUNT, 0)) AS RECEIPT
-                  FROM {schema}.STUDENT_FEE_PAYMENT_DTLS
-                  WHERE REMARKS NOT IN ('Advance')
-                  GROUP BY INVOICE_NO
-                ),
-                OPENING_BAL AS (
-                  SELECT
-                    FD.ENRL_NO,
-                    SUM(CASE WHEN FD.INVOICE_TYPE = 'OB' OR FD.INVOICE_TYPE IN ('FE', 'Bounce', 'REFUND') THEN NVL(FD.AMOUNT, 0) ELSE 0 END)
-                    - SUM(CASE WHEN FD.INVOICE_TYPE IN ('DI', 'AD') THEN NVL(FD.AMOUNT, 0) ELSE 0 END)
-                    - SUM(NVL(P.RECEIPT, 0)) AS OPENING_AMOUNT
-                  FROM DistinctFD FD
-                  LEFT JOIN PaymentTotal P ON FD.INVOICE_NO = P.INVOICE_NO
-                  WHERE (FD.INVOICE_TYPE = 'OB' OR TRUNC(FD.INVOICE_DATE) < TO_DATE(:cutoff, 'YYYY-MM-DD'))
-                  GROUP BY FD.ENRL_NO
-                )
-                SELECT NVL(SUM(OB.OPENING_AMOUNT), 0)
-                FROM OPENING_BAL OB
-            """, {"cid": company_id, "cutoff": ob_cutoff})
-            sp_ob_row = cur.fetchone()
-            if sp_ob_row and sp_ob_row[0] is not None:
-                calc_val = float(sp_ob_row[0])
-                if calc_val != 0 or total_ob_amt == 0:
-                    total_ob_amt = calc_val
-        except Exception as ob_err:
-            # Fallback to raw_ob_amt if prior period calculation is unavailable
-            pass
-        
-        net_outstanding_balance = (total_due_amt + total_ob_amt + total_refund_amt + total_bounce_amt) - (total_adv_adj_amt + total_discount_amt + total_receipts_amt)
+        cur.execute(f"SELECT COUNT(1) FROM {schema}.STUDENT_FEE_PAYMENT WHERE COMPANY_ID = :cid", {"cid": company_id})
+        total_vouchers_count = int(cur.fetchone()[0] or 0)
         
         # 4. If transaction module requested, fetch recent receipt vouchers
         transaction_records = []
