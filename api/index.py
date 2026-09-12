@@ -436,15 +436,23 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
+        content_length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else ""
+        try:
+            data = json.loads(body) if body else {}
+        except Exception:
+            data = {}
+
         if "/login" in parsed.path:
-            content_length = int(self.headers.get('Content-Length', 0))
-            body = self.rfile.read(content_length).decode('utf-8')
-            try:
-                data = json.loads(body) if body else {}
-            except Exception:
-                data = {}
             res, code = handle_login(data)
             self._send_json(res, code)
+        elif "/tally" in parsed.path:
+            try:
+                from api.tally import handle_tally_post
+                res, code = handle_tally_post(data)
+                self._send_json(res, code)
+            except Exception as e:
+                self._send_json({"status": "error", "message": str(e)}, 500)
         else:
             self._send_json({"error": "Endpoint not found"}, 404)
 
@@ -461,5 +469,19 @@ class handler(BaseHTTPRequestHandler):
                 self._send_json(res, code)
             except Exception as e:
                 self._send_json({"status": "error", "error": str(e)}, 500)
+        elif "/tally" in parsed.path:
+            try:
+                from api.tally import get_tally_summary
+                cid = params.get("company_id", [""])[0]
+                entity = params.get("entity", ["school"])[0]
+                f_date = params.get("from_date", [""])[0]
+                t_date = params.get("to_date", [""])[0]
+                summary = get_tally_summary(cid, entity, f_date, t_date)
+                if summary:
+                    self._send_json({"status": "success", "data": summary}, 200)
+                else:
+                    self._send_json({"status": "not_found", "message": "No Tally summary recorded"}, 404)
+            except Exception as e:
+                self._send_json({"status": "error", "message": str(e)}, 500)
         else:
             self._send_json({"status": "SyncTally API Online"}, 200)
