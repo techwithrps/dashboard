@@ -3176,6 +3176,59 @@
             color: var(--text-muted);
         }
 
+        /* ---------------- FINANCIAL YEAR BADGE STYLES ---------------- */
+        .fy-badge-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .fy-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .fy-badge-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #eff6ff;
+            color: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fy-badge-icon svg {
+            width: 17px;
+            height: 17px;
+        }
+
+        .fy-badge-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .fy-badge-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .fy-badge-val {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
         /* ---------------- DUAL DATE FILTER STYLES ---------------- */
         .date-filter-container {
             display: flex;
@@ -4121,19 +4174,20 @@
                                     <p>Overview of your account status</p>
                                 </div>
 
-                                <!-- DUAL DATE FILTER: FROM DATE & TO DATE -->
-                                <div class="date-filter-container">
-                                    <div class="date-filter-col">
-                                        <label class="date-filter-label" for="filter-from-date">From Date</label>
-                                        <div class="date-input-field-wrap">
-                                            <input type="date" id="filter-from-date" class="date-range-control" onchange="handleDateRangeChange()">
+                                <!-- CURRENT FINANCIAL YEAR BADGE (Automatic FY start to today) -->
+                                <div class="fy-badge-container">
+                                    <div class="fy-badge">
+                                        <div class="fy-badge-icon">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                                            </svg>
                                         </div>
-                                    </div>
-
-                                    <div class="date-filter-col">
-                                        <label class="date-filter-label" for="filter-to-date">To Date</label>
-                                        <div class="date-input-field-wrap">
-                                            <input type="date" id="filter-to-date" class="date-range-control" onchange="handleDateRangeChange()">
+                                        <div class="fy-badge-content">
+                                            <span class="fy-badge-label">Session Period</span>
+                                            <span class="fy-badge-val" id="current-fy-display">Current Financial Year (01 Apr 2026 - Today)</span>
                                         </div>
                                     </div>
                                 </div>
@@ -4152,15 +4206,7 @@
                             <p>Account Summary</p>
                         </div>
                     </div>
-                    <span class="date-pill" id="tally-date-pill">As on 10 Sep 2026</span>
-                </div>
-
-                <!-- Tally Status Notice (Shown when data of requested date is not received from Tally) -->
-                <div id="tally-status-notice" style="display: none; background: #fffbeb; border: 1px solid #fef3c7; color: #b45309; padding: 7px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; align-items: center; gap: 8px;">
-                    <svg style="width: 15px; height: 15px; flex-shrink: 0; color: #d97706;" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-                    </svg>
-                    <span id="tally-status-notice-text">Not received data from Tally of today</span>
+                    <span class="date-pill" id="tally-date-pill">Current FY</span>
                 </div>
 
                 <div class="summary-rows-list">
@@ -4214,6 +4260,17 @@
                             <span class="row-label">Balance</span>
                         </div>
                         <span class="row-value" id="tally-live-balance">₹ 0.00</span>
+                    </div>
+                </div>
+
+                <!-- Note under Tally Card if not realtime synced -->
+                <div id="tally-realtime-note" style="display: none; margin-top: 6px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 9px 12px; font-size: 12px; color: #92400e; line-height: 1.45; align-items: flex-start; gap: 8px;">
+                    <svg style="width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; color: #d97706;" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                    </svg>
+                    <div style="flex: 1;">
+                        <div id="tally-realtime-note-title" style="font-weight: 700; color: #78350f; margin-bottom: 2px; font-size: 12px;">Notice: Realtime Sync Pending</div>
+                        <div id="tally-realtime-note-text" style="color: #92400e; font-size: 11.5px; font-weight: 500;">Showing records as of previous sync. Please sync from Tally to view live data.</div>
                     </div>
                 </div>
             </div>
@@ -5932,40 +5989,7 @@
             fetchTransactionMetrics(false);
         }
 
-        function updatePillDates() {
-            const elFrom = document.getElementById('filter-from-date');
-            const elTo = document.getElementById('filter-to-date');
-            const fVal = elFrom ? elFrom.value : '';
-            const tVal = elTo ? elTo.value : '';
-            
-            const fmtDate = (dStr) => {
-                if (!dStr) return '';
-                const parts = dStr.split('-');
-                if (parts.length === 3) {
-                    const d = new Date(parts[0], parts[1] - 1, parts[2]);
-                    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-                }
-                return dStr;
-            };
-
-            let label = 'Current Session';
-            if (fVal && tVal) {
-                label = `${fmtDate(fVal)} to ${fmtDate(tVal)}`;
-            } else if (tVal) {
-                label = `As on ${fmtDate(tVal)}`;
-            } else if (fVal) {
-                label = `From ${fmtDate(fVal)}`;
-            }
-
-            const pillTally = document.getElementById('tally-date-pill');
-            if (pillTally) pillTally.textContent = label;
-            const pillElogi = document.getElementById('elogipay-date-pill');
-            if (pillElogi) pillElogi.textContent = label;
-        }
-
-        let datePickersUserModified = false;
-
-        function initDatePickers(force = false) {
+        function getFYRange() {
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -5978,22 +6002,41 @@
                 fyYear = yyyy - 1;
             }
             const fyStartStr = `${fyYear}-04-01`;
+            const fyEndYear = fyYear + 1;
 
-            const elFrom = document.getElementById('filter-from-date');
-            const elTo = document.getElementById('filter-to-date');
+            return {
+                from: fyStartStr,
+                to: todayStr,
+                fyLabel: `FY ${fyYear} - ${fyEndYear}`,
+                todayFormatted: today.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+            };
+        }
 
-            if (elFrom && (force || !datePickersUserModified || !elFrom.value)) {
-                elFrom.value = fyStartStr;
+        const fmtDateStr = (dStr) => {
+            if (!dStr) return '';
+            const parts = dStr.split('-');
+            if (parts.length === 3) {
+                const d = new Date(parts[0], parts[1] - 1, parts[2]);
+                return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
             }
-            if (elTo && (force || !datePickersUserModified || !elTo.value)) {
-                elTo.value = todayStr;
+            return dStr;
+        };
+
+        function initDatePickers() {
+            const fy = getFYRange();
+            const elDisplay = document.getElementById('current-fy-display');
+            if (elDisplay) {
+                elDisplay.textContent = `${fy.fyLabel} (01 Apr ${fy.from.slice(0,4)} to Today - ${fy.todayFormatted})`;
             }
-            updatePillDates();
+
+            const pillElogi = document.getElementById('elogipay-date-pill');
+            if (pillElogi) pillElogi.textContent = `As on Today (${fy.todayFormatted})`;
+
+            const pillTally = document.getElementById('tally-date-pill');
+            if (pillTally) pillTally.textContent = `Current FY`;
         }
 
         function handleDateRangeChange() {
-            datePickersUserModified = true;
-            updatePillDates();
             fetchTransactionMetrics(false);
         }
 
@@ -6003,14 +6046,8 @@
                 startTrnLoader();
             }
             try {
-                const elFrom = document.getElementById('filter-from-date');
-                const elTo = document.getElementById('filter-to-date');
-                const fVal = elFrom ? elFrom.value : '';
-                const tVal = elTo ? elTo.value : '';
-
-                let url = `/api/metrics?company_id=${currentAuth.company_id}&institute_type=${currentAuth.institute_type}&module=transaction&q=${encodeURIComponent(trnSearchQuery)}`;
-                if (fVal) url += `&from_date=${encodeURIComponent(fVal)}`;
-                if (tVal) url += `&to_date=${encodeURIComponent(tVal)}`;
+                const fy = getFYRange();
+                let url = `/api/metrics?company_id=${currentAuth.company_id}&institute_type=${currentAuth.institute_type}&module=transaction&from_date=${encodeURIComponent(fy.from)}&to_date=${encodeURIComponent(fy.to)}&q=${encodeURIComponent(trnSearchQuery)}`;
                 const res = await fetch(url);
                 if (!res.ok) {
                     finishTrnLoader();
@@ -6025,49 +6062,49 @@
 
                 finishTrnLoader(() => {
                     // 1. Tally Account Card
-                    const hasTally = Boolean(m.tally_has_data);
-                    const noticeEl = document.getElementById('tally-status-notice');
-                    const noticeText = document.getElementById('tally-status-notice-text');
+                    const isRealtime = Boolean(m.tally_is_realtime);
+                    const noteEl = document.getElementById('tally-realtime-note');
+                    const noteText = document.getElementById('tally-realtime-note-text');
                     const pillTally = document.getElementById('tally-date-pill');
 
-                    if (hasTally) {
-                        if (noticeEl) noticeEl.style.display = 'none';
+                    const tallyOpn = Number(m.tally_opening || 0);
+                    const tallyDue = Number(m.tally_due || 0);
+                    const tallyRcpt = Number(m.tally_receipts || 0);
+                    const tallyBal = Number(m.tally_balance || 0);
+
+                    // Animate numbers
+                    animateNumber('tally-live-opening', tallyOpn, 1200, 'currency');
+                    animateNumber('tally-live-due', tallyDue, 1200, 'currency');
+                    animateNumber('tally-live-receipts', tallyRcpt, 1200, 'currency');
+                    animateNumber('tally-live-balance', tallyBal, 1200, 'currency');
+
+                    if (isRealtime) {
+                        if (noteEl) noteEl.style.display = 'none';
                         if (pillTally) {
                             pillTally.style.background = '#f0fdf4';
                             pillTally.style.color = '#15803d';
                             pillTally.style.borderColor = '#bbf7d0';
+                            pillTally.textContent = '● Realtime Synced (Today)';
                         }
-                        const tallyOpn = Number(m.tally_opening || 0);
-                        const tallyDue = Number(m.tally_due || 0);
-                        const tallyRcpt = Number(m.tally_receipts || 0);
-                        const tallyBal = Number(m.tally_balance || 0);
-
-                        animateNumber('tally-live-opening', tallyOpn, 1200, 'currency');
-                        animateNumber('tally-live-due', tallyDue, 1200, 'currency');
-                        animateNumber('tally-live-receipts', tallyRcpt, 1200, 'currency');
-                        animateNumber('tally-live-balance', tallyBal, 1200, 'currency');
                     } else {
-                        if (noticeEl) {
-                            noticeEl.style.display = 'flex';
-                            let msg = m.tally_message || 'Not received data from Tally of today';
-                            if (m.tally_last_synced_date) {
-                                msg += ` (Last: ${fmtDate(m.tally_last_synced_date)})`;
+                        if (noteEl) {
+                            noteEl.style.display = 'flex';
+                            let lastDateStr = m.tally_last_synced_date ? fmtDateStr(m.tally_last_synced_date) : (m.to_date ? fmtDateStr(m.to_date) : 'Previous Sync');
+                            const noteTitle = document.getElementById('tally-realtime-note-title');
+                            if (noteTitle) {
+                                noteTitle.textContent = `Notice: Showing Last Synced Data (${lastDateStr})`;
                             }
-                            if (noticeText) noticeText.textContent = msg;
+                            if (noteText) {
+                                noteText.textContent = `Realtime sync for today is pending. Displaying figures recorded on ${lastDateStr}. Please initiate a sync from Tally to view live numbers.`;
+                            }
                         }
                         if (pillTally) {
                             pillTally.style.background = '#fffbeb';
                             pillTally.style.color = '#b45309';
                             pillTally.style.borderColor = '#fde68a';
+                            let lastDateLabel = m.tally_last_synced_date ? fmtDateStr(m.tally_last_synced_date) : 'Previous Sync';
+                            pillTally.textContent = `As on ${lastDateLabel}`;
                         }
-                        const elTOpn = document.getElementById('tally-live-opening');
-                        if (elTOpn) elTOpn.textContent = '₹ 0.00';
-                        const elTDue = document.getElementById('tally-live-due');
-                        if (elTDue) elTDue.textContent = '₹ 0.00';
-                        const elTRcpt = document.getElementById('tally-live-receipts');
-                        if (elTRcpt) elTRcpt.textContent = '₹ 0.00';
-                        const elTBal = document.getElementById('tally-live-balance');
-                        if (elTBal) elTBal.textContent = '₹ 0.00';
                     }
 
                     // 2. Bind Elogipay Account Card with High-Precision Animations

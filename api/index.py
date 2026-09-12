@@ -406,6 +406,7 @@ def handle_metrics(params):
             "transaction_records": transaction_records,
             # Tally Synced Metrics from Neon DB
             "tally_has_data": bool(tally_data.get("has_data", False)),
+            "tally_is_realtime": bool(tally_data.get("is_realtime", False)),
             "tally_message": str(tally_data.get("message") or ""),
             "tally_last_synced_date": str(tally_data.get("last_synced_date") or ""),
             "tally_opening": float(tally_data.get("opening_balance") or 0.0),

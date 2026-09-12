@@ -143,6 +143,7 @@ def get_tally_summary(company_id, institute_type="school", from_date=None, to_da
     if not conn:
         return {
             "has_data": False,
+            "is_realtime": False,
             "opening_balance": 0.0,
             "due_amount": 0.0,
             "receipt_amount": 0.0,
@@ -154,7 +155,7 @@ def get_tally_summary(company_id, institute_type="school", from_date=None, to_da
         from psycopg2.extras import RealDictCursor
         cur = conn.cursor(cursor_factory=RealDictCursor)
 
-        # 1. Exact match for company_id and to_date (and from_date if specified)
+        # 1. Check for exact match for requested clean_to
         if clean_from:
             query = f"""
             SELECT opening_balance, due_amount, receipt_amount, net_balance, from_date, to_date, updated_at
@@ -179,6 +180,7 @@ def get_tally_summary(company_id, institute_type="school", from_date=None, to_da
         if row:
             return {
                 "has_data": True,
+                "is_realtime": True,
                 "opening_balance": float(row["opening_balance"] or 0),
                 "due_amount": float(row["due_amount"] or 0),
                 "receipt_amount": float(row["receipt_amount"] or 0),
@@ -186,40 +188,52 @@ def get_tally_summary(company_id, institute_type="school", from_date=None, to_da
                 "from_date": str(row["from_date"]),
                 "to_date": str(row["to_date"]),
                 "updated_at": str(row["updated_at"]),
-                "message": "Live data received from Tally"
+                "message": "Realtime synced with Tally"
             }
 
-        # 2. If no record for the requested to_date, find the latest available date for context
+        # 2. If no record for today's date, fetch the latest recorded summary for this company
         cur.execute(f"""
-        SELECT to_date, updated_at
+        SELECT opening_balance, due_amount, receipt_amount, net_balance, from_date, to_date, updated_at
         FROM {table_name}
         WHERE company_id = %s
         ORDER BY to_date DESC, updated_at DESC
         LIMIT 1;
         """, (cid,))
         latest_row = cur.fetchone()
-        last_synced_date = str(latest_row["to_date"]) if latest_row else None
 
-        is_requested_today = (clean_to == today_str)
-        if is_requested_today:
-            msg = "Not received data from Tally of today"
-        else:
-            msg = f"Not received data from Tally for {clean_to}"
+        if latest_row:
+            last_date = str(latest_row["to_date"])
+            msg = f"Notice: Today's realtime data is pending sync. Displaying last recorded figures as of {last_date}. Please sync from Tally to view live updates."
+            return {
+                "has_data": True,
+                "is_realtime": False,
+                "opening_balance": float(latest_row["opening_balance"] or 0),
+                "due_amount": float(latest_row["due_amount"] or 0),
+                "receipt_amount": float(latest_row["receipt_amount"] or 0),
+                "net_balance": float(latest_row["net_balance"] or 0),
+                "from_date": str(latest_row["from_date"]),
+                "to_date": last_date,
+                "last_synced_date": last_date,
+                "updated_at": str(latest_row["updated_at"]),
+                "message": msg
+            }
 
         return {
             "has_data": False,
+            "is_realtime": False,
             "opening_balance": 0.0,
             "due_amount": 0.0,
             "receipt_amount": 0.0,
             "net_balance": 0.0,
-            "last_synced_date": last_synced_date,
+            "last_synced_date": None,
             "to_date": clean_to,
-            "message": msg
+            "message": "No sync records found for this company. Please perform initial sync from Tally."
         }
     except Exception as e:
         print(f"[NeonDB] Query error in get_tally_summary: {e}")
         return {
             "has_data": False,
+            "is_realtime": False,
             "opening_balance": 0.0,
             "due_amount": 0.0,
             "receipt_amount": 0.0,
