@@ -4149,6 +4149,14 @@
                     <span class="date-pill" id="tally-date-pill">As on 10 Sep 2026</span>
                 </div>
 
+                <!-- Tally Status Notice (Shown when data of requested date is not received from Tally) -->
+                <div id="tally-status-notice" style="display: none; background: #fffbeb; border: 1px solid #fef3c7; color: #b45309; padding: 7px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; align-items: center; gap: 8px;">
+                    <svg style="width: 15px; height: 15px; flex-shrink: 0; color: #d97706;" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                    </svg>
+                    <span id="tally-status-notice-text">Not received data from Tally of today</span>
+                </div>
+
                 <div class="summary-rows-list">
                     <!-- Opening -->
                     <div class="summary-row">
@@ -5949,13 +5957,16 @@
             if (pillElogi) pillElogi.textContent = label;
         }
 
-        function initDatePickers() {
+        let datePickersUserModified = false;
+
+        function initDatePickers(force = false) {
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
             const dd = String(today.getDate()).padStart(2, '0');
             const todayStr = `${yyyy}-${mm}-${dd}`;
             
+            // Financial year starts on April 1st
             let fyYear = yyyy;
             if (today.getMonth() < 3) {
                 fyYear = yyyy - 1;
@@ -5964,9 +5975,20 @@
 
             const elFrom = document.getElementById('filter-from-date');
             const elTo = document.getElementById('filter-to-date');
-            if (elFrom && !elFrom.value) elFrom.value = fyStartStr;
-            if (elTo && !elTo.value) elTo.value = todayStr;
+
+            if (elFrom && (force || !datePickersUserModified || !elFrom.value)) {
+                elFrom.value = fyStartStr;
+            }
+            if (elTo && (force || !datePickersUserModified || !elTo.value)) {
+                elTo.value = todayStr;
+            }
             updatePillDates();
+        }
+
+        function handleDateRangeChange() {
+            datePickersUserModified = true;
+            updatePillDates();
+            fetchTransactionMetrics(false);
         }
 
         async function fetchTransactionMetrics(isSilent = false) {
@@ -5996,18 +6018,42 @@
                 const totalBal = (m.net_outstanding !== undefined && m.net_outstanding !== null) ? Number(m.net_outstanding) : ((totalOpn + totalDue) - totalRcpt);
 
                 finishTrnLoader(() => {
-                    // 1. Tally Account Card (Live from Neon DB or 0.00 if pending sync)
-                    const tallyOpn = Number(m.tally_opening || 0);
-                    const tallyDue = Number(m.tally_due || 0);
-                    const tallyRcpt = Number(m.tally_receipts || 0);
-                    const tallyBal = Number(m.tally_balance || 0);
+                    // 1. Tally Account Card
+                    const hasTally = Boolean(m.tally_has_data);
+                    const noticeEl = document.getElementById('tally-status-notice');
+                    const noticeText = document.getElementById('tally-status-notice-text');
+                    const pillTally = document.getElementById('tally-date-pill');
 
-                    if (tallyOpn || tallyDue || tallyRcpt || tallyBal) {
+                    if (hasTally) {
+                        if (noticeEl) noticeEl.style.display = 'none';
+                        if (pillTally) {
+                            pillTally.style.background = '#f0fdf4';
+                            pillTally.style.color = '#15803d';
+                            pillTally.style.borderColor = '#bbf7d0';
+                        }
+                        const tallyOpn = Number(m.tally_opening || 0);
+                        const tallyDue = Number(m.tally_due || 0);
+                        const tallyRcpt = Number(m.tally_receipts || 0);
+                        const tallyBal = Number(m.tally_balance || 0);
+
                         animateNumber('tally-live-opening', tallyOpn, 1200, 'currency');
                         animateNumber('tally-live-due', tallyDue, 1200, 'currency');
                         animateNumber('tally-live-receipts', tallyRcpt, 1200, 'currency');
                         animateNumber('tally-live-balance', tallyBal, 1200, 'currency');
                     } else {
+                        if (noticeEl) {
+                            noticeEl.style.display = 'flex';
+                            let msg = m.tally_message || 'Not received data from Tally of today';
+                            if (m.tally_last_synced_date) {
+                                msg += ` (Last: ${fmtDate(m.tally_last_synced_date)})`;
+                            }
+                            if (noticeText) noticeText.textContent = msg;
+                        }
+                        if (pillTally) {
+                            pillTally.style.background = '#fffbeb';
+                            pillTally.style.color = '#b45309';
+                            pillTally.style.borderColor = '#fde68a';
+                        }
                         const elTOpn = document.getElementById('tally-live-opening');
                         if (elTOpn) elTOpn.textContent = '₹ 0.00';
                         const elTDue = document.getElementById('tally-live-due');

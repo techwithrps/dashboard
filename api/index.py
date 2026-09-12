@@ -178,9 +178,17 @@ def handle_metrics(params):
         transaction_records = []
 
         if module_tab == "transaction":
-            # 2. Financial Totals for Transaction Module (Exact eLOGiPay ERP Procedure Calculation)
-            f_date = clean_from_date if clean_from_date else "2026-04-01"
-            t_date = clean_to_date if clean_to_date else "2026-09-11"
+            import datetime
+            today_obj = datetime.date.today()
+            today_str = today_obj.strftime("%Y-%m-%d")
+            cur_year = today_obj.year
+            cur_month = today_obj.month
+            fy_start_year = cur_year if cur_month >= 4 else cur_year - 1
+            default_fy_start = f"{fy_start_year}-04-01"
+
+            # Financial Totals for Transaction Module (Exact eLOGiPay ERP Procedure Calculation)
+            f_date = clean_from_date if clean_from_date else default_fy_start
+            t_date = clean_to_date if clean_to_date else today_str
 
             cur.execute(f"""
                 WITH STUDENT_INFO AS (
@@ -353,10 +361,17 @@ def handle_metrics(params):
                 })
         
         # Tally Metrics from Neon DB
-        tally_data = {"opening_balance": 0.0, "due_amount": 0.0, "receipt_amount": 0.0, "net_balance": 0.0}
+        tally_data = {
+            "has_data": False,
+            "opening_balance": 0.0,
+            "due_amount": 0.0,
+            "receipt_amount": 0.0,
+            "net_balance": 0.0,
+            "message": "Not received data from Tally of today"
+        }
         if module_tab == "transaction" and get_tally_summary:
             try:
-                ts = get_tally_summary(company_id, institute_type, clean_from_date, clean_to_date)
+                ts = get_tally_summary(company_id, institute_type, f_date, t_date)
                 if ts:
                     tally_data = ts
             except Exception as te:
@@ -386,10 +401,13 @@ def handle_metrics(params):
             "net_outstanding": net_outstanding_balance,
             "total_invoices_count": total_invoices_count,
             "total_vouchers_count": total_vouchers_count,
-            "from_date": clean_from_date or "",
-            "to_date": clean_to_date or "",
+            "from_date": clean_from_date or (f_date if module_tab == "transaction" else ""),
+            "to_date": clean_to_date or (t_date if module_tab == "transaction" else ""),
             "transaction_records": transaction_records,
             # Tally Synced Metrics from Neon DB
+            "tally_has_data": bool(tally_data.get("has_data", False)),
+            "tally_message": str(tally_data.get("message") or ""),
+            "tally_last_synced_date": str(tally_data.get("last_synced_date") or ""),
             "tally_opening": float(tally_data.get("opening_balance") or 0.0),
             "tally_due": float(tally_data.get("due_amount") or 0.0),
             "tally_receipts": float(tally_data.get("receipt_amount") or 0.0),

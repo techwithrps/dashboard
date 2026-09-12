@@ -131,52 +131,101 @@ def handle_tally_post(data):
             conn.close()
 
 def get_tally_summary(company_id, institute_type="school", from_date=None, to_date=None):
+    import datetime
+    today_str = datetime.date.today().strftime("%Y-%m-%d")
+    
     table_name = "tally_college_summary" if "college" in str(institute_type).lower() else "tally_school_summary"
     clean_from = normalize_date(from_date)
-    clean_to = normalize_date(to_date)
+    clean_to = normalize_date(to_date) or today_str
     cid = str(company_id or "").strip()
 
     conn = get_neon_connection()
     if not conn:
-        return None
+        return {
+            "has_data": False,
+            "opening_balance": 0.0,
+            "due_amount": 0.0,
+            "receipt_amount": 0.0,
+            "net_balance": 0.0,
+            "message": "Database connection error"
+        }
 
     try:
         from psycopg2.extras import RealDictCursor
         cur = conn.cursor(cursor_factory=RealDictCursor)
 
-        # Match by company_id and optionally date range
-        params = [cid]
-        date_clause = ""
-        if clean_from and clean_to:
-            date_clause = "AND from_date = %s AND to_date = %s"
-            params.extend([clean_from, clean_to])
+        # 1. Exact match for company_id and to_date (and from_date if specified)
+        if clean_from:
+            query = f"""
+            SELECT opening_balance, due_amount, receipt_amount, net_balance, from_date, to_date, updated_at
+            FROM {table_name}
+            WHERE company_id = %s AND from_date = %s AND to_date = %s
+            ORDER BY updated_at DESC
+            LIMIT 1;
+            """
+            cur.execute(query, (cid, clean_from, clean_to))
+        else:
+            query = f"""
+            SELECT opening_balance, due_amount, receipt_amount, net_balance, from_date, to_date, updated_at
+            FROM {table_name}
+            WHERE company_id = %s AND to_date = %s
+            ORDER BY updated_at DESC
+            LIMIT 1;
+            """
+            cur.execute(query, (cid, clean_to))
 
-        query = f"""
-        SELECT opening_balance, due_amount, receipt_amount, net_balance, updated_at
-        FROM {table_name}
-        WHERE company_id = %s {date_clause}
-        ORDER BY updated_at DESC
-        LIMIT 1;
-        """
-        cur.execute(query, params)
         row = cur.fetchone()
-        if not row and date_clause:
-            # Fallback: get the latest recorded summary for this company regardless of exact dates
-            cur.execute(f"SELECT opening_balance, due_amount, receipt_amount, net_balance, updated_at FROM {table_name} WHERE company_id = %s ORDER BY updated_at DESC LIMIT 1;", [cid])
-            row = cur.fetchone()
 
         if row:
             return {
+                "has_data": True,
                 "opening_balance": float(row["opening_balance"] or 0),
                 "due_amount": float(row["due_amount"] or 0),
                 "receipt_amount": float(row["receipt_amount"] or 0),
                 "net_balance": float(row["net_balance"] or 0),
-                "updated_at": str(row["updated_at"])
+                "from_date": str(row["from_date"]),
+                "to_date": str(row["to_date"]),
+                "updated_at": str(row["updated_at"]),
+                "message": "Live data received from Tally"
             }
-        return None
+
+        # 2. If no record for the requested to_date, find the latest available date for context
+        cur.execute(f"""
+        SELECT to_date, updated_at
+        FROM {table_name}
+        WHERE company_id = %s
+        ORDER BY to_date DESC, updated_at DESC
+        LIMIT 1;
+        """, (cid,))
+        latest_row = cur.fetchone()
+        last_synced_date = str(latest_row["to_date"]) if latest_row else None
+
+        is_requested_today = (clean_to == today_str)
+        if is_requested_today:
+            msg = "Not received data from Tally of today"
+        else:
+            msg = f"Not received data from Tally for {clean_to}"
+
+        return {
+            "has_data": False,
+            "opening_balance": 0.0,
+            "due_amount": 0.0,
+            "receipt_amount": 0.0,
+            "net_balance": 0.0,
+            "last_synced_date": last_synced_date,
+            "to_date": clean_to,
+            "message": msg
+        }
     except Exception as e:
         print(f"[NeonDB] Query error in get_tally_summary: {e}")
-        return None
+        return {
+            "has_data": False,
+            "opening_balance": 0.0,
+            "due_amount": 0.0,
+            "receipt_amount": 0.0,
+            "net_balance": 0.0,
+            "message": f"Error querying Neon DB: {str(e)}"
+        }
     finally:
         if conn:
             conn.close()
