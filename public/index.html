@@ -2794,6 +2794,14 @@
 
 
 
+        @keyframes pulseRing {
+            0% { transform: scale(0.92); opacity: 0.8; }
+            50% { transform: scale(1.12); opacity: 0.35; }
+            100% { transform: scale(0.92); opacity: 0.8; }
+        }
+
+
+
         .table-empty-box {
 
             padding: 45px 20px;
@@ -4066,52 +4074,67 @@
             <!-- 💳 TRANSACTION MODULE VIEW (Exact 3 Cards: TOTAL RECEIPTS, TOTAL FEE DUE, OPENING BALANCE) -->
 
             <div id="transaction-view" style="display: none;">
-                <!-- PRODUCTION-READY REFERENCE ACCOUNTS SUMMARY DASHBOARD WITH REAL ERP DATA -->
-                <div style="width: 100%; max-width: 1380px; margin: 0 auto; padding-top: 10px;">
-<div class="dashboard-container">
+                <!-- 0 TO 100% LOADING ANIMATION SCREEN -->
+                <div id="trn-loading-screen" style="display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 480px; width: 100%; padding: 60px 20px;">
+                    <div style="background: #ffffff; border-radius: 24px; padding: 48px 40px; box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.08), 0 0 1px 1px rgba(0, 0, 0, 0.04); display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 460px; width: 100%; border: 1px solid #f1f5f9;">
+                        
+                        <!-- Animated Icon Ring -->
+                        <div style="position: relative; width: 84px; height: 84px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center;">
+                            <div style="position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(135deg, rgba(79, 70, 229, 0.15), rgba(6, 182, 212, 0.15)); animation: pulseRing 2s infinite ease-in-out;"></div>
+                            <div style="width: 62px; height: 62px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #06b6d4); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 22px -4px rgba(79, 70, 229, 0.4);">
+                                <svg style="width: 30px; height: 30px; color: #ffffff;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                </svg>
+                            </div>
+                        </div>
 
-        
-        <!-- HEADER -->
-        <header class="dashboard-header">
-            <div class="header-titles">
-                <h1>Accounts Summary</h1>
-                <p>Overview of your account status</p>
-            </div>
+                        <h3 style="font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 8px; letter-spacing: -0.3px;">Loading Accounts Summary</h3>
+                        <p style="font-size: 13px; color: #64748b; margin-bottom: 28px; font-weight: 500; line-height: 1.5;">Fetching live ledger records from eLOGiPay ERP database...</p>
 
-            <!-- DUAL DATE FILTER: FROM DATE & TO DATE -->
-            <div class="date-filter-container">
-                <div class="date-filter-col">
-                    <label class="date-filter-label" for="filter-from-date">From Date</label>
-                    <div class="date-input-field-wrap">
-                        <input type="date" id="filter-from-date" class="date-range-control" onchange="handleDateRangeChange()">
+                        <!-- Progress Track -->
+                        <div style="width: 100%; height: 10px; background: #f1f5f9; border-radius: 999px; overflow: hidden; position: relative; margin-bottom: 14px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);">
+                            <div id="trn-loader-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #4f46e5, #06b6d4, #10b981); border-radius: 999px; transition: width 0.12s ease-out;"></div>
+                        </div>
+
+                        <!-- Progress Percentage & Subtext -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Loading Data</span>
+                            <span id="trn-loader-pct" style="font-size: 18px; font-weight: 900; color: #4f46e5; font-family: monospace;">0%</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="date-filter-col">
-                    <label class="date-filter-label" for="filter-to-date">To Date</label>
-                    <div class="date-input-field-wrap">
-                        <input type="date" id="filter-to-date" class="date-range-control" onchange="handleDateRangeChange()">
-                    </div>
-                </div>
-            </div>
-        </header>
+                <!-- TRANSACTION MAIN CONTENT (Visible only when load reaches 100%) -->
+                <div id="trn-main-content">
+                    <div style="width: 100%; max-width: 1380px; margin: 0 auto; padding-top: 10px;">
+                        <div class="dashboard-container">
+                            <!-- HEADER -->
+                            <header class="dashboard-header">
+                                <div class="header-titles">
+                                    <h1>Accounts Summary</h1>
+                                    <p>Overview of your account status</p>
+                                </div>
 
-        <!-- TRANSACTION RECONCILIATION ACCURACY (0 to 100% Animation) -->
-        <div class="trn-accuracy-panel" style="background: #ffffff; border-radius: 16px; padding: 14px 22px; margin-bottom: 24px; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: 0 4px 18px -4px rgba(0, 0, 0, 0.04); display: flex; flex-direction: column; gap: 8px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);"></div>
-                    <span style="font-size: 13px; font-weight: 700; color: #475569; letter-spacing: 0.3px; text-transform: uppercase;">Reconciliation Accuracy</span>
-                </div>
-                <span id="trn-accuracy-pct" style="font-size: 15px; font-weight: 800; color: #4f46e5; font-family: monospace;">0.0% Accurate</span>
-            </div>
-            <div style="height: 6px; width: 100%; background: #f1f5f9; border-radius: 999px; overflow: hidden;">
-                <div id="trn-accuracy-fill" style="height: 100%; width: 0%; background: linear-gradient(90deg, #4f46e5, #06b6d4, #10b981); border-radius: 999px; transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);"></div>
-            </div>
-        </div>
+                                <!-- DUAL DATE FILTER: FROM DATE & TO DATE -->
+                                <div class="date-filter-container">
+                                    <div class="date-filter-col">
+                                        <label class="date-filter-label" for="filter-from-date">From Date</label>
+                                        <div class="date-input-field-wrap">
+                                            <input type="date" id="filter-from-date" class="date-range-control" onchange="handleDateRangeChange()">
+                                        </div>
+                                    </div>
 
-        <!-- SECTION 2: ACCOUNT SUMMARY (Tally vs Elogipay) -->
-        <section class="summary-grid">
+                                    <div class="date-filter-col">
+                                        <label class="date-filter-label" for="filter-to-date">To Date</label>
+                                        <div class="date-input-field-wrap">
+                                            <input type="date" id="filter-to-date" class="date-range-control" onchange="handleDateRangeChange()">
+                                        </div>
+                                    </div>
+                                </div>
+                            </header>
+
+                            <!-- SECTION 2: ACCOUNT SUMMARY (Tally vs Elogipay) -->
+                            <section class="summary-grid">
             
             <!-- LEFT: Tally Card -->
             <div class="summary-card">
@@ -4256,6 +4279,7 @@
     
 </div>
                 </div>
+            </div>
 </div>
 
             <!-- ⚙️ ADMINISTRATION MODULE VIEW -->
@@ -5735,6 +5759,89 @@
         let trnSearchQuery = '';
         let trnSearchDebounce = null;
 
+        let trnLoaderInterval = null;
+        let trnLoaderFinishInterval = null;
+
+        function startTrnLoader() {
+            if (trnLoaderInterval) clearInterval(trnLoaderInterval);
+            if (trnLoaderFinishInterval) clearInterval(trnLoaderFinishInterval);
+
+            const screen = document.getElementById('trn-loading-screen');
+            const content = document.getElementById('trn-main-content');
+            const bar = document.getElementById('trn-loader-bar');
+            const pct = document.getElementById('trn-loader-pct');
+
+            if (screen) {
+                screen.style.transition = 'none';
+                screen.style.opacity = '1';
+                screen.style.display = 'flex';
+            }
+            if (content) {
+                content.style.display = 'none';
+                content.style.opacity = '0';
+            }
+            if (bar) bar.style.width = '0%';
+            if (pct) pct.textContent = '0%';
+
+            let currentProgress = 0;
+            trnLoaderInterval = setInterval(() => {
+                if (currentProgress < 88) {
+                    const step = Math.max(1, Math.floor((90 - currentProgress) / 7));
+                    currentProgress += step;
+                    if (bar) bar.style.width = currentProgress + '%';
+                    if (pct) pct.textContent = currentProgress + '%';
+                }
+            }, 45);
+        }
+
+        function finishTrnLoader(onComplete) {
+            if (trnLoaderInterval) clearInterval(trnLoaderInterval);
+            if (trnLoaderFinishInterval) clearInterval(trnLoaderFinishInterval);
+
+            const screen = document.getElementById('trn-loading-screen');
+            const content = document.getElementById('trn-main-content');
+            const bar = document.getElementById('trn-loader-bar');
+            const pct = document.getElementById('trn-loader-pct');
+
+            let cur = parseInt(pct ? pct.textContent : '0') || 0;
+            trnLoaderFinishInterval = setInterval(() => {
+                cur += 4;
+                if (cur >= 100) {
+                    cur = 100;
+                    clearInterval(trnLoaderFinishInterval);
+                    if (bar) bar.style.width = '100%';
+                    if (pct) pct.textContent = '100%';
+
+                    setTimeout(() => {
+                        if (screen) {
+                            screen.style.transition = 'opacity 0.25s ease';
+                            screen.style.opacity = '0';
+                            setTimeout(() => {
+                                screen.style.display = 'none';
+                                if (content) {
+                                    content.style.display = 'block';
+                                    requestAnimationFrame(() => {
+                                        content.style.transition = 'opacity 0.35s ease';
+                                        content.style.opacity = '1';
+                                    });
+                                }
+                                if (typeof onComplete === 'function') onComplete();
+                            }, 250);
+                        } else {
+                            if (content) {
+                                content.style.display = 'block';
+                                content.style.opacity = '1';
+                            }
+                            if (typeof onComplete === 'function') onComplete();
+                        }
+                    }, 180);
+                } else {
+                    if (bar) bar.style.width = cur + '%';
+                    if (pct) pct.textContent = cur + '%';
+                }
+            }, 18);
+        }
+
         function switchNavModule(moduleName) {
             console.log("Switching to module:", moduleName);
             currentNavModule = moduleName;
@@ -5770,16 +5877,6 @@
                 if (masterView) masterView.style.display = 'none';
                 if (csView) csView.style.display = 'none';
                 if (trnView) trnView.style.display = 'block';
-                const trnFillEl = document.getElementById('trn-accuracy-fill');
-                if (trnFillEl) {
-                    trnFillEl.style.transition = 'none';
-                    trnFillEl.style.width = '0%';
-                }
-                const trnPctEl = document.getElementById('trn-accuracy-pct');
-                if (trnPctEl) {
-                    trnPctEl._lastVal = 0;
-                    trnPctEl.textContent = '0.0% Accurate';
-                }
                 initDatePickers();
                 fetchTransactionMetrics(false);
             } else if (moduleName === 'admin') {
@@ -5818,16 +5915,6 @@
 
         function handleDateRangeChange() {
             updatePillDates();
-            const trnFillEl = document.getElementById('trn-accuracy-fill');
-            if (trnFillEl) {
-                trnFillEl.style.transition = 'none';
-                trnFillEl.style.width = '0%';
-            }
-            const trnPctEl = document.getElementById('trn-accuracy-pct');
-            if (trnPctEl) {
-                trnPctEl._lastVal = 0;
-                trnPctEl.textContent = '0.0% Accurate';
-            }
             fetchTransactionMetrics(false);
         }
 
@@ -5884,6 +5971,9 @@
 
         async function fetchTransactionMetrics(isSilent = false) {
             if (!currentAuth) return;
+            if (!isSilent) {
+                startTrnLoader();
+            }
             try {
                 const elFrom = document.getElementById('filter-from-date');
                 const elTo = document.getElementById('filter-to-date');
@@ -5894,7 +5984,10 @@
                 if (fVal) url += `&from_date=${encodeURIComponent(fVal)}`;
                 if (tVal) url += `&to_date=${encodeURIComponent(tVal)}`;
                 const res = await fetch(url);
-                if (!res.ok) return;
+                if (!res.ok) {
+                    finishTrnLoader();
+                    return;
+                }
                 const m = await res.json();
 
                 const totalOpn = Number(m.total_opening_bal || 0);
@@ -5902,35 +5995,39 @@
                 const totalRcpt = Number(m.total_receipts || 0);
                 const totalBal = (m.net_outstanding !== undefined && m.net_outstanding !== null) ? Number(m.net_outstanding) : ((totalOpn + totalDue) - totalRcpt);
 
-                // 1. Transaction Accuracy 0 to 100% Animation
-                animateNumber('trn-accuracy-pct', 100.0, 1200, 'percent_accurate');
-                const trnFillEl = document.getElementById('trn-accuracy-fill');
-                if (trnFillEl) {
-                    trnFillEl.style.transition = 'width 1.2s cubic-bezier(0.16, 1, 0.3, 1)';
-                    trnFillEl.style.width = '100%';
-                }
+                finishTrnLoader(() => {
+                    // 1. Tally Account Card (Live from Neon DB or 0.00 if pending sync)
+                    const tallyOpn = Number(m.tally_opening || 0);
+                    const tallyDue = Number(m.tally_due || 0);
+                    const tallyRcpt = Number(m.tally_receipts || 0);
+                    const tallyBal = Number(m.tally_balance || 0);
 
-                // 2. Tally Account Card (Set to 0.00 until Tally database table is configured)
-                const elTOpn = document.getElementById('tally-live-opening');
-                if (elTOpn) elTOpn.textContent = '₹ 0.00';
+                    if (tallyOpn || tallyDue || tallyRcpt || tallyBal) {
+                        animateNumber('tally-live-opening', tallyOpn, 1200, 'currency');
+                        animateNumber('tally-live-due', tallyDue, 1200, 'currency');
+                        animateNumber('tally-live-receipts', tallyRcpt, 1200, 'currency');
+                        animateNumber('tally-live-balance', tallyBal, 1200, 'currency');
+                    } else {
+                        const elTOpn = document.getElementById('tally-live-opening');
+                        if (elTOpn) elTOpn.textContent = '₹ 0.00';
+                        const elTDue = document.getElementById('tally-live-due');
+                        if (elTDue) elTDue.textContent = '₹ 0.00';
+                        const elTRcpt = document.getElementById('tally-live-receipts');
+                        if (elTRcpt) elTRcpt.textContent = '₹ 0.00';
+                        const elTBal = document.getElementById('tally-live-balance');
+                        if (elTBal) elTBal.textContent = '₹ 0.00';
+                    }
 
-                const elTDue = document.getElementById('tally-live-due');
-                if (elTDue) elTDue.textContent = '₹ 0.00';
-
-                const elTRcpt = document.getElementById('tally-live-receipts');
-                if (elTRcpt) elTRcpt.textContent = '₹ 0.00';
-
-                const elTBal = document.getElementById('tally-live-balance');
-                if (elTBal) elTBal.textContent = '₹ 0.00';
-
-                // 3. Bind Elogipay Account Card with High-Precision Animations
-                animateNumber('elogi-live-opening', totalOpn, 1200, 'currency');
-                animateNumber('elogi-live-due', totalDue, 1200, 'currency');
-                animateNumber('elogi-live-receipts', totalRcpt, 1200, 'currency');
-                animateNumber('elogi-live-balance', totalBal, 1200, 'currency');
+                    // 2. Bind Elogipay Account Card with High-Precision Animations
+                    animateNumber('elogi-live-opening', totalOpn, 1200, 'currency');
+                    animateNumber('elogi-live-due', totalDue, 1200, 'currency');
+                    animateNumber('elogi-live-receipts', totalRcpt, 1200, 'currency');
+                    animateNumber('elogi-live-balance', totalBal, 1200, 'currency');
+                });
 
             } catch (e) {
                 console.error("Failed to fetch live transaction metrics:", e);
+                finishTrnLoader();
             }
         }
 

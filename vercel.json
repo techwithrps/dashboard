@@ -7,6 +7,14 @@
     {
       "source": "/api/metrics",
       "destination": "/api/metrics.py"
+    },
+    {
+      "source": "/api/tally/sync",
+      "destination": "/api/tally.py"
+    },
+    {
+      "source": "/api/tally",
+      "destination": "/api/tally.py"
     }
   ]
 }

@@ -19,6 +19,15 @@ COLLEGE_DB_PASS = os.environ.get("COLLEGE_DB_PASS", "ELOGIPAYCOLLEGE_1228#")
 
 _pools = {}
 
+try:
+    from api.tally import get_tally_summary
+except ImportError:
+    try:
+        from tally import get_tally_summary
+    except ImportError:
+        get_tally_summary = None
+
+
 def get_pool(institute_type: str = "college"):
     inst = str(institute_type).lower()
     if inst not in _pools:
@@ -343,6 +352,16 @@ def handle_metrics(params):
                     "activity_time": str(r[5]) if r[5] else "N/A"
                 })
         
+        # Tally Metrics from Neon DB
+        tally_data = {"opening_balance": 0.0, "due_amount": 0.0, "receipt_amount": 0.0, "net_balance": 0.0}
+        if module_tab == "transaction" and get_tally_summary:
+            try:
+                ts = get_tally_summary(company_id, institute_type, clean_from_date, clean_to_date)
+                if ts:
+                    tally_data = ts
+            except Exception as te:
+                print(f"[NeonDB] Tally fetch error: {te}")
+        
         return {
             "company_id": company_id,
             "company_name": company_name,
@@ -369,7 +388,13 @@ def handle_metrics(params):
             "total_vouchers_count": total_vouchers_count,
             "from_date": clean_from_date or "",
             "to_date": clean_to_date or "",
-            "transaction_records": transaction_records
+            "transaction_records": transaction_records,
+            # Tally Synced Metrics from Neon DB
+            "tally_opening": float(tally_data.get("opening_balance") or 0.0),
+            "tally_due": float(tally_data.get("due_amount") or 0.0),
+            "tally_receipts": float(tally_data.get("receipt_amount") or 0.0),
+            "tally_balance": float(tally_data.get("net_balance") or 0.0),
+            "tally_updated_at": str(tally_data.get("updated_at") or "")
         }, 200
     except Exception as e:
         return {"error": str(e)}, 500
