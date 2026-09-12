@@ -45,25 +45,23 @@ Content-Type: application/json
 | :--- | :--- | :--- | :--- | :--- |
 | `company_id` | `string` / `number` | **Yes** | Internal Company ID matching portal institution | `"1"` |
 | `entity` | `string` | **Yes** | Target institution type: `"school"` or `"college"` | `"school"` |
-| `from_date` | `string` | **Yes** | Current financial year start date (`YYYY-MM-DD`) | `"2026-04-01"` |
-| `to_date` | `string` | **Yes** | As-on date for the sync figures (`YYYY-MM-DD`) | `"2026-09-12"` |
 | `opening_balance` | `number` | **Yes** | Total Opening Balance amount | `14403105.42` |
 | `due_amount` | `number` | **Yes** | Total Fee Due amount for the period | `685497604.00` |
 | `receipt_amount` | `number` | **Yes** | Total Fee Receipts collected for the period | `559939981.02` |
 
-> [!NOTE]
-> You do **NOT** need to calculate `net_balance`. The backend calculates $(\text{opening} + \text{due}) - \text{receipt}$ automatically upon arrival and stores it.
+> [!TIP]
+> **Dates & Balance are fully automated:**
+> 1. `from_date` (Current Financial Year start, e.g. `2026-04-01`) and `to_date` (Today's sync date) are **automatically determined by the server** on each update. You do **not** need to send them.
+> 2. `net_balance` is also **automatically calculated** by the system as $(\text{opening} + \text{due}) - \text{receipt}$.
 
 ---
 
-### Sample Request Body (JSON)
+### Minimal Request Body (JSON)
 
 ```json
 {
   "entity": "school",
   "company_id": "1",
-  "from_date": "2026-04-01",
-  "to_date": "2026-09-12",
   "opening_balance": 14403105.42,
   "due_amount": 685497604.00,
   "receipt_amount": 559939981.02
@@ -182,8 +180,6 @@ curl -X POST "https://dashboard-chi-two-41.vercel.app/api/tally" \
   -d '{
     "entity": "school",
     "company_id": "1",
-    "from_date": "2026-04-01",
-    "to_date": "2026-09-12",
     "opening_balance": 14403105.42,
     "due_amount": 685497604.00,
     "receipt_amount": 559939981.02
@@ -196,16 +192,13 @@ curl -X POST "https://dashboard-chi-two-41.vercel.app/api/tally" \
 
 ```python
 import requests
-from datetime import date
 
 API_URL = "https://dashboard-chi-two-41.vercel.app/api/tally"
 
-def push_tally_summary(company_id, entity, from_date, to_date, opening, due, receipts):
+def push_tally_summary(company_id, entity, opening, due, receipts):
     payload = {
         "company_id": str(company_id),
         "entity": entity,            # "school" or "college"
-        "from_date": from_date,      # e.g. "2026-04-01"
-        "to_date": to_date,          # e.g. "2026-09-12"
         "opening_balance": float(opening),
         "due_amount": float(due),
         "receipt_amount": float(receipts)
@@ -225,13 +218,11 @@ def push_tally_summary(company_id, entity, from_date, to_date, opening, due, rec
         print(f"Sync failed: {err}")
         return False
 
-# Example invocation for today:
+# Example invocation:
 if __name__ == "__main__":
     push_tally_summary(
         company_id="1",
         entity="school",
-        from_date="2026-04-01",
-        to_date=date.today().strftime("%Y-%m-%d"),
         opening=14403105.42,
         due=685497604.00,
         receipts=559939981.02

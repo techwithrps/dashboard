@@ -54,11 +54,17 @@ def handle_tally_post(data):
     entity = str(data.get("entity") or data.get("institute_type") or "school").lower().strip()
     table_name = "tally_college_summary" if "college" in entity else "tally_school_summary"
     
+    import datetime
+    today = datetime.date.today()
+    fy_start_year = today.year if today.month >= 4 else today.year - 1
+    auto_from_date = f"{fy_start_year}-04-01"
+    auto_to_date = today.strftime("%Y-%m-%d")
+
     raw_from_date = data.get("from_date")
     raw_to_date = data.get("to_date")
     
-    from_date = normalize_date(raw_from_date) or "2026-04-01"
-    to_date = normalize_date(raw_to_date) or "2026-09-12"
+    from_date = normalize_date(raw_from_date) or auto_from_date
+    to_date = normalize_date(raw_to_date) or auto_to_date
 
     try:
         opening_bal = float(data.get("opening_balance") or data.get("opening") or 0.0)
