@@ -63,15 +63,45 @@ def resolve_company_id(cid_or_code, entity="school"):
         print(f"Resolve company error: {e}")
     return val
 
+def unwrap_payload(data):
+    if not isinstance(data, dict):
+        return data
+    # Recursively unwrap "Data", "data", "Tally_msg", "tally_msg"
+    curr = data
+    for _ in range(3):
+        unwrapped = False
+        for k in ["Data", "data", "DATA", "Tally_msg", "tally_msg", "TALLY_MSG", "Tally", "tally"]:
+            if isinstance(curr, dict) and k in curr and isinstance(curr[k], dict):
+                curr = curr[k]
+                unwrapped = True
+                break
+        if not unwrapped:
+            break
+    return curr
+
+def get_field_val(d, *keys):
+    if not isinstance(d, dict):
+        return None
+    for k in keys:
+        if k in d and d[k] is not None:
+            return d[k]
+        for actual_k in d:
+            if actual_k.lower().replace("_", "") == k.lower().replace("_", "") and d[actual_k] is not None:
+                return d[actual_k]
+    return None
+
 def handle_tally_post(data):
     if not isinstance(data, dict):
         return {"status": "error", "message": "Invalid JSON body"}, 400
 
-    raw_cid = str(data.get("company_id") or data.get("company_code") or "").strip()
+    # Unwrap if sent as {"Data": {"Tally_msg": {...}}} or {"Tally_msg": {...}}
+    data = unwrap_payload(data)
+
+    raw_cid = str(get_field_val(data, "company_id", "company_code", "companyid", "cid") or "").strip()
     if not raw_cid:
         return {"status": "error", "message": "company_id or company_code is required"}, 400
 
-    entity = str(data.get("entity") or data.get("institute_type") or "school").lower().strip()
+    entity = str(get_field_val(data, "entity", "institute_type", "type") or "school").lower().strip()
     table_name = "tally_college_summary" if "college" in entity else "tally_school_summary"
     company_id = resolve_company_id(raw_cid, entity) or raw_cid
     
@@ -81,16 +111,16 @@ def handle_tally_post(data):
     auto_from_date = f"{fy_start_year}-04-01"
     auto_to_date = today.strftime("%Y-%m-%d")
 
-    raw_from_date = data.get("from_date")
-    raw_to_date = data.get("to_date")
+    raw_from_date = get_field_val(data, "from_date", "fromdate")
+    raw_to_date = get_field_val(data, "to_date", "todate")
     
     from_date = normalize_date(raw_from_date) or auto_from_date
     to_date = normalize_date(raw_to_date) or auto_to_date
 
     try:
-        opening_bal = float(data.get("opening_balance") or data.get("opening") or 0.0)
-        due_amt = float(data.get("due_amount") or data.get("due") or 0.0)
-        receipt_amt = float(data.get("receipt_amount") or data.get("receipts") or 0.0)
+        opening_bal = float(get_field_val(data, "opening_balance", "opening", "openingbalance") or 0.0)
+        due_amt = float(get_field_val(data, "due_amount", "due", "dueamount") or 0.0)
+        receipt_amt = float(get_field_val(data, "receipt_amount", "receipts", "receiptamount", "receipt") or 0.0)
         # Calculate balance automatically from the 3 values: (Opening + Due - Receipts)
         net_bal = (opening_bal + due_amt) - receipt_amt
     except Exception as e:

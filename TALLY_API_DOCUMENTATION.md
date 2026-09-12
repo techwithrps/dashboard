@@ -56,17 +56,25 @@ Content-Type: application/json
 
 ---
 
-### Minimal Request Body (JSON)
+### Standard Request Body (Tally_msg Format)
+
+Tally connectors can send data either wrapped inside `Data` / `Tally_msg` or directly:
 
 ```json
 {
-  "entity": "school",
-  "company_id": "1",
-  "opening_balance": 14403105.42,
-  "due_amount": 685497604.00,
-  "receipt_amount": 559939981.02
+  "Data": {
+    "Tally_msg": {
+      "entity": "school",
+      "company_id": "1",
+      "opening_balance": 14403105.42,
+      "due_amount": 685497604.00,
+      "receipt_amount": 559939981.02
+    }
+  }
 }
 ```
+
+*Note: Direct flat JSON or `{"Tally_msg": {...}}` is also supported automatically.*
 
 ---
 
