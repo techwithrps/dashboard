@@ -3668,12 +3668,18 @@
             transition: all 0.2s ease;
         }
 
-        .date-pill.live-pill,
-        .date-pill.tally-realtime {
+        .date-pill.live-pill {
             background: #f0fdf4 !important;
             color: #15803d !important;
             border-color: #bbf7d0 !important;
             font-weight: 700 !important;
+        }
+
+        .date-pill.tally-synced {
+            background: #f8fafc !important;
+            color: #334155 !important;
+            border-color: #cbd5e1 !important;
+            font-weight: 600 !important;
         }
 
         .date-pill.tally-pending {
@@ -3685,32 +3691,133 @@
 
         .realtime-blink-dot {
             display: inline-block;
-            width: 7px;
-            height: 7px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background-color: #10b981;
             margin-right: 6px;
             vertical-align: middle;
             position: relative;
-            animation: liveBeaconPulse 1.5s infinite ease-in-out;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8);
+            animation: liveBeaconPulse 1.4s infinite ease-in-out;
         }
 
         @keyframes liveBeaconPulse {
             0% {
-                transform: scale(0.92);
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-                opacity: 0.75;
+                transform: scale(0.85);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8);
+                opacity: 0.8;
             }
             50% {
-                transform: scale(1.25);
-                box-shadow: 0 0 0 4px rgba(16, 185, 129, 0);
+                transform: scale(1.2);
+                box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
                 opacity: 1;
             }
             100% {
-                transform: scale(0.92);
+                transform: scale(0.85);
                 box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-                opacity: 0.75;
+                opacity: 0.8;
             }
+        }
+
+        /* Modern Tally Marquee Ticker */
+        .tally-sync-marquee-bar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: linear-gradient(90deg, #f8fafc 0%, #f0fdf4 50%, #f8fafc 100%);
+            border: 1px solid #dcfce7;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.04);
+            border-radius: 12px;
+            padding: 9px 16px;
+            margin-top: 14px;
+            overflow: hidden;
+        }
+
+        .marquee-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 20px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+        }
+
+        .chip-bolt {
+            width: 13px;
+            height: 13px;
+        }
+
+        .marquee-content-wrapper {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent);
+        }
+
+        .marquee-track {
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+            animation: marqueeSlide 30s linear infinite;
+        }
+
+        .marquee-track:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes marqueeSlide {
+            0% {
+                transform: translateX(0%);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .marquee-item {
+            font-size: 13px;
+            color: #334155;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .marquee-sep {
+            margin: 0 16px;
+            color: #10b981;
+            font-size: 11px;
+            opacity: 0.7;
+        }
+
+        .tally-kbd {
+            display: inline-block;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-bottom: 2px solid #94a3b8;
+            border-radius: 5px;
+            padding: 1px 6px;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #0f172a;
+            font-family: inherit;
+            line-height: 1.2;
+            margin: 0 2px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+
+        .tally-highlight {
+            color: #0f172a;
+            font-weight: 700;
         }
 
         .summary-rows-list {
@@ -3776,17 +3883,19 @@
         }
 
         .row-label {
-            font-size: 14.5px;
+            font-size: 13.5px;
             font-weight: 600;
             color: #334155;
+            white-space: nowrap;
         }
 
         .row-value {
-            font-size: 17.5px;
+            font-size: 16.5px;
             font-weight: 800;
             color: #0f172a;
             font-feature-settings: "tnum";
             letter-spacing: -0.2px;
+            white-space: nowrap;
         }
 
         /* Highlighted Balance Rows */
@@ -4401,7 +4510,7 @@
                                             </div>
                                             <div class="fy-badge-content">
                                                 <span class="fy-badge-label">Session Period</span>
-                                                <span class="fy-badge-val" id="current-fy-display">Current Financial Year (01 Apr 2026 - Today)</span>
+                                                <span class="fy-badge-val" id="current-fy-display">FY 2026 - 2027 (01 Apr 2026 to 12 Sep 2026)</span>
                                             </div>
                                         </div>
                                     </div>
@@ -4421,7 +4530,7 @@
                             <p>Account Summary</p>
                         </div>
                     </div>
-                    <span class="date-pill" id="tally-date-pill">Current FY</span>
+                    <span class="date-pill" id="tally-date-pill">Last Sync: Checking...</span>
                 </div>
 
                 <div class="summary-rows-list">
@@ -4438,7 +4547,7 @@
                         <span class="row-value" id="tally-live-opening">₹ 0.00</span>
                     </div>
 
-                    <!-- Due's -->
+                    <!-- Due's & Adjustments -->
                     <div class="summary-row">
                         <div class="row-left">
                             <div class="row-icon orange-subtle">
@@ -4446,12 +4555,12 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                 </svg>
                             </div>
-                            <span class="row-label">Due's</span>
+                            <span class="row-label">Due's & Adjustments</span>
                         </div>
                         <span class="row-value" id="tally-live-due">₹ 0.00</span>
                     </div>
 
-                    <!-- Receipts -->
+                    <!-- Receipts & Adjustments -->
                     <div class="summary-row">
                         <div class="row-left">
                             <div class="row-icon green-subtle">
@@ -4459,7 +4568,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
                                 </svg>
                             </div>
-                            <span class="row-label">Receipts</span>
+                            <span class="row-label">Receipts & Adjustments</span>
                         </div>
                         <span class="row-value" id="tally-live-receipts">₹ 0.00</span>
                     </div>
@@ -4562,7 +4671,7 @@
                             <p>Account Summary</p>
                         </div>
                     </div>
-                    <span class="date-pill" id="elogipay-date-pill">As on 10 Sep 2026</span>
+                    <span class="date-pill live-pill" id="elogipay-date-pill"><span class="realtime-blink-dot"></span>Realtime</span>
                 </div>
 
                 <div class="summary-rows-list">
@@ -4579,7 +4688,7 @@
                         <span class="row-value" id="elogi-live-opening">₹ 0</span>
                     </div>
 
-                    <!-- Due's -->
+                    <!-- Due's & Adjustments -->
                     <div class="summary-row">
                         <div class="row-left">
                             <div class="row-icon orange-subtle">
@@ -4587,12 +4696,12 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                 </svg>
                             </div>
-                            <span class="row-label">Due's</span>
+                            <span class="row-label">Due's & Adjustments</span>
                         </div>
                         <span class="row-value" id="elogi-live-due">₹ 0</span>
                     </div>
 
-                    <!-- Receipts -->
+                    <!-- Receipts & Adjustments -->
                     <div class="summary-row">
                         <div class="row-left">
                             <div class="row-icon green-subtle">
@@ -4600,7 +4709,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
                                 </svg>
                             </div>
-                            <span class="row-label">Receipts</span>
+                            <span class="row-label">Receipts & Adjustments</span>
                         </div>
                         <span class="row-value" id="elogi-live-receipts">₹ 0</span>
                     </div>
@@ -4619,8 +4728,37 @@
                     </div>
                 </div>
             </div>
-
         </section>
+
+        <!-- Modern Tally Realtime Sync Ticker -->
+        <div class="tally-sync-marquee-bar">
+            <div class="marquee-chip">
+                <svg class="chip-bolt" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                </svg>
+                <span>Instant Sync</span>
+            </div>
+            <div class="marquee-content-wrapper">
+                <div class="marquee-track">
+                    <span class="marquee-item">
+                        Press <kbd class="tally-kbd">Alt</kbd> + <kbd class="tally-kbd">6</kbd> in <strong class="tally-highlight">Gateway of Tally</strong> for instant real-time synchronization of transactional data with elogiPay.
+                    </span>
+                    <span class="marquee-sep">✦</span>
+                    <span class="marquee-item">
+                        Live figures for Opening, Due's &amp; Adjustments, and Receipts &amp; Adjustments update immediately.
+                    </span>
+                    <span class="marquee-sep">✦</span>
+                    <span class="marquee-item">
+                        Press <kbd class="tally-kbd">Alt</kbd> + <kbd class="tally-kbd">6</kbd> in <strong class="tally-highlight">Gateway of Tally</strong> for instant real-time synchronization of transactional data with elogiPay.
+                    </span>
+                    <span class="marquee-sep">✦</span>
+                    <span class="marquee-item">
+                        Live figures for Opening, Due's &amp; Adjustments, and Receipts &amp; Adjustments update immediately.
+                    </span>
+                    <span class="marquee-sep">✦</span>
+                </div>
+            </div>
+        </div>
 
 
 
@@ -6346,13 +6484,13 @@
             const fy = getFYRange();
             const elDisplay = document.getElementById('current-fy-display');
             if (elDisplay) {
-                elDisplay.textContent = `${fy.fyLabel} (01 Apr ${fy.from.slice(0,4)} to Today - ${fy.todayFormatted})`;
+                elDisplay.textContent = `${fy.fyLabel} (01 Apr ${fy.from.slice(0,4)} to ${fy.todayFormatted})`;
             }
 
             const pillElogi = document.getElementById('elogipay-date-pill');
             if (pillElogi) {
                 pillElogi.className = 'date-pill live-pill';
-                pillElogi.innerHTML = `<span class="realtime-blink-dot"></span>As on Today (${fy.todayFormatted})`;
+                pillElogi.innerHTML = `<span class="realtime-blink-dot"></span>Realtime`;
             }
 
             const pillTally = document.getElementById('tally-date-pill');
@@ -6410,8 +6548,8 @@
                     if (isRealtime) {
                         if (noteEl) noteEl.style.display = 'none';
                         if (pillTally) {
-                            pillTally.className = 'date-pill tally-realtime';
-                            pillTally.innerHTML = `<span class="realtime-blink-dot"></span>${syncLabel}`;
+                            pillTally.className = 'date-pill tally-synced';
+                            pillTally.textContent = syncLabel;
                         }
                     } else {
                         if (noteEl) {
@@ -6434,7 +6572,7 @@
                     const pillElogi = document.getElementById('elogipay-date-pill');
                     if (pillElogi) {
                         pillElogi.className = 'date-pill live-pill';
-                        pillElogi.innerHTML = `<span class="realtime-blink-dot"></span>As on Today (${fy.todayFormatted})`;
+                        pillElogi.innerHTML = `<span class="realtime-blink-dot"></span>Realtime`;
                     }
                     animateNumber('elogi-live-opening', totalOpn, 1200, 'currency');
                     animateNumber('elogi-live-due', totalDue, 1200, 'currency');

@@ -359,6 +359,7 @@ def get_tally_summary(company_id, institute_type="school", from_date=None, to_da
                 "net_balance": bal,
                 "from_date": str(row["from_date"]),
                 "to_date": str(row["to_date"]),
+                "last_synced_date": str(row["to_date"]),
                 "updated_at": str(row["updated_at"]),
                 "message": "Realtime synced with Tally"
             }
