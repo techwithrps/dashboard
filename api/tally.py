@@ -54,25 +54,20 @@ def handle_tally_post(data):
     entity = str(data.get("entity") or data.get("institute_type") or "school").lower().strip()
     table_name = "tally_college_summary" if "college" in entity else "tally_school_summary"
     
-    company_name = data.get("company_name") or f"Company {company_id}"
     raw_from_date = data.get("from_date")
     raw_to_date = data.get("to_date")
     
     from_date = normalize_date(raw_from_date) or "2026-04-01"
-    to_date = normalize_date(raw_to_date) or "2026-09-11"
+    to_date = normalize_date(raw_to_date) or "2026-09-12"
 
     try:
-        opening_bal = float(data.get("opening_balance") or 0.0)
-        due_amt = float(data.get("due_amount") or 0.0)
-        receipt_amt = float(data.get("receipt_amount") or 0.0)
-        if "net_balance" in data and data["net_balance"] is not None:
-            net_bal = float(data["net_balance"])
-        else:
-            net_bal = (opening_bal + due_amt) - receipt_amt
+        opening_bal = float(data.get("opening_balance") or data.get("opening") or 0.0)
+        due_amt = float(data.get("due_amount") or data.get("due") or 0.0)
+        receipt_amt = float(data.get("receipt_amount") or data.get("receipts") or 0.0)
+        # Calculate balance automatically from the 3 values: (Opening + Due - Receipts)
+        net_bal = (opening_bal + due_amt) - receipt_amt
     except Exception as e:
         return {"status": "error", "message": f"Invalid numeric amounts: {str(e)}"}, 400
-
-    raw_data_json = json.dumps(data)
 
     conn = get_neon_connection()
     if not conn:
@@ -85,24 +80,22 @@ def handle_tally_post(data):
         
         upsert_query = f"""
         INSERT INTO {table_name} (
-            company_id, company_name, from_date, to_date,
+            company_id, from_date, to_date,
             opening_balance, due_amount, receipt_amount, net_balance,
-            raw_data, updated_at
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+            updated_at
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
         ON CONFLICT (company_id, from_date, to_date)
         DO UPDATE SET
-            company_name = EXCLUDED.company_name,
             opening_balance = EXCLUDED.opening_balance,
             due_amount = EXCLUDED.due_amount,
             receipt_amount = EXCLUDED.receipt_amount,
             net_balance = EXCLUDED.net_balance,
-            raw_data = EXCLUDED.raw_data,
             updated_at = CURRENT_TIMESTAMP
-        RETURNING id, company_id, company_name, from_date, to_date, opening_balance, due_amount, receipt_amount, net_balance, updated_at;
+        RETURNING id, company_id, from_date, to_date, opening_balance, due_amount, receipt_amount, net_balance, updated_at;
         """
         cur.execute(upsert_query, (
-            company_id, company_name, from_date, to_date,
-            opening_bal, due_amt, receipt_amt, net_bal, raw_data_json
+            company_id, from_date, to_date,
+            opening_bal, due_amt, receipt_amt, net_bal
         ))
         row = cur.fetchone()
         conn.commit()
@@ -112,16 +105,15 @@ def handle_tally_post(data):
             "id": row["id"],
             "table": table_name,
             "company_id": row["company_id"],
-            "company_name": row["company_name"],
             "from_date": str(row["from_date"]),
             "to_date": str(row["to_date"]),
             "opening_balance": float(row["opening_balance"]),
             "due_amount": float(row["due_amount"]),
             "receipt_amount": float(row["receipt_amount"]),
-            "net_balance": float(row["net_balance"]),
+            "calculated_balance": float(row["net_balance"]),
             "updated_at": str(row["updated_at"])
         }
-        return {"status": "success", "message": "Tally metrics synced successfully into Neon DB", "data": res_data}, 200
+        return {"status": "success", "message": "Tally 3 metrics synced and balance calculated successfully into Neon DB", "data": res_data}, 200
     except Exception as e:
         if conn:
             conn.rollback()
@@ -178,13 +170,17 @@ def get_tally_summary(company_id, institute_type="school", from_date=None, to_da
         row = cur.fetchone()
 
         if row:
+            opn = float(row["opening_balance"] or 0)
+            due = float(row["due_amount"] or 0)
+            rcpt = float(row["receipt_amount"] or 0)
+            bal = float(row["net_balance"]) if (row.get("net_balance") is not None and row.get("net_balance") != 0) else ((opn + due) - rcpt)
             return {
                 "has_data": True,
                 "is_realtime": True,
-                "opening_balance": float(row["opening_balance"] or 0),
-                "due_amount": float(row["due_amount"] or 0),
-                "receipt_amount": float(row["receipt_amount"] or 0),
-                "net_balance": float(row["net_balance"] or 0),
+                "opening_balance": opn,
+                "due_amount": due,
+                "receipt_amount": rcpt,
+                "net_balance": bal,
                 "from_date": str(row["from_date"]),
                 "to_date": str(row["to_date"]),
                 "updated_at": str(row["updated_at"]),
@@ -203,14 +199,18 @@ def get_tally_summary(company_id, institute_type="school", from_date=None, to_da
 
         if latest_row:
             last_date = str(latest_row["to_date"])
+            opn = float(latest_row["opening_balance"] or 0)
+            due = float(latest_row["due_amount"] or 0)
+            rcpt = float(latest_row["receipt_amount"] or 0)
+            bal = float(latest_row["net_balance"]) if (latest_row.get("net_balance") is not None and latest_row.get("net_balance") != 0) else ((opn + due) - rcpt)
             msg = f"Notice: Today's realtime data is pending sync. Displaying last recorded figures as of {last_date}. Please sync from Tally to view live updates."
             return {
                 "has_data": True,
                 "is_realtime": False,
-                "opening_balance": float(latest_row["opening_balance"] or 0),
-                "due_amount": float(latest_row["due_amount"] or 0),
-                "receipt_amount": float(latest_row["receipt_amount"] or 0),
-                "net_balance": float(latest_row["net_balance"] or 0),
+                "opening_balance": opn,
+                "due_amount": due,
+                "receipt_amount": rcpt,
+                "net_balance": bal,
                 "from_date": str(latest_row["from_date"]),
                 "to_date": last_date,
                 "last_synced_date": last_date,

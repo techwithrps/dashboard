@@ -267,47 +267,23 @@
         #login-view {
 
 
-
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             width: 100vw;
-
-
-
             height: 100vh;
-
-
-
-            position: relative;
-
-
-
+            height: 100dvh;
             margin: 0;
-
-
-
             padding: 0;
-
-
-
-            background: url('/syntally_background.png') no-repeat center center;
-
-
-
-            background-size: 100vw 100vh; /* Complete edge-to-edge fill, zero letterboxing / empty bars */
-
-
-
+            background: #09205b url('/syntally_background.png') no-repeat center center;
+            background-size: 100% 100%; /* Exact full-viewport fit, zero cropping on top, bottom or sides */
             overflow: hidden;
-
-
-
             display: flex;
-
-
-
             align-items: center;
-
-
-
+            justify-content: center;
+            z-index: 10;
         }
 
 
@@ -321,67 +297,20 @@
 
 
         .form-stage-box {
-
-
-
             position: absolute;
-
-
-
-            top: 55%;
-
-
-
+            top: 50%;
             transform: translateY(-50%);
-
-
-
-            right: 5.6vw;
-
-
-
-            width: 21.5vw;
-
-
-
-            min-width: 290px;
-
-
-
-            max-width: 380px;
-
-
-
-            background: rgba(255, 255, 255, 0.93);
-
-
-
+            right: 5.5vw;
+            width: 22vw;
+            min-width: 295px;
+            max-width: 370px;
+            background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(20px);
-
-
-
             -webkit-backdrop-filter: blur(20px);
-
-
-
             border: 1.5px solid rgba(255, 255, 255, 0.98);
-
-
-
-            border-radius: 22px;
-
-
-
-            padding: clamp(16px, 1.8vw, 24px) clamp(18px, 1.9vw, 26px);
-
-
-
+            border-radius: 20px;
+            padding: clamp(14px, 1.6vw, 22px) clamp(16px, 1.8vw, 24px);
             box-shadow: 0 20px 45px -10px rgba(5, 18, 50, 0.45), 0 0 25px rgba(255, 255, 255, 0.4) inset;
-
-
-
-            display: flex;
-
 
 
             flex-direction: column;
@@ -3140,10 +3069,15 @@
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg-page);
             color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body.dashboard-active {
             padding: 32px 40px 60px;
             display: flex;
             justify-content: center;
-            -webkit-font-smoothing: antialiased;
         }
 
         .dashboard-container {
@@ -3866,7 +3800,7 @@
 
 
 
-<body>
+<body class="login-active">
 
 
 
@@ -3951,17 +3885,36 @@
 
 
                 <div class="input-group">
-
-
-
-                    <label>Company</label>
-
-
-
-                    <input type="text" id="login-company-code" class="input-field" placeholder="Enter Company Code" required autocomplete="off">
-
-
-
+                    <label for="login-company-code">Company Code</label>
+                    <input type="text" id="login-company-code" list="company-suggestions" class="input-field" placeholder="Enter Company Code (e.g. SHOOLINI, SRHU, HHS)" required autocomplete="off">
+                    <datalist id="company-suggestions">
+                        <option value="HHS">
+                        <option value="HJHS">
+                        <option value="SHS">
+                        <option value="METHODIST">
+                        <option value="DPS SITAPUR">
+                        <option value="GDGSILIGURI">
+                        <option value="GDGRUDRAPUR">
+                        <option value="STMARY">
+                        <option value="SSDEC">
+                        <option value="SSPS">
+                        <option value="DEMO">
+                        <option value="SRHU">
+                        <option value="SHOOLINI">
+                        <option value="SRISRI">
+                        <option value="MPGI">
+                        <option value="SILB">
+                        <option value="SHOOLINIONLINE">
+                        <option value="SDDCL">
+                        <option value="SDDIP">
+                        <option value="SDDSCN">
+                        <option value="SDDIET">
+                        <option value="SDDHDC">
+                        <option value="SDDCE">
+                        <option value="SSDCE">
+                        <option value="SDDIMS">
+                        <option value="SDDCTE">
+                    </datalist>
                 </div>
 
 
