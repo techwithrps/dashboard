@@ -64,6 +64,40 @@ def resolve_company_id(cid_or_code, entity="school"):
         print(f"Resolve company error: {e}")
     return val
 
+def clean_float(val, default=0.0):
+    if val is None:
+        return default
+    if isinstance(val, (int, float, Decimal)):
+        return float(val)
+    s = str(val).strip()
+    if not s:
+        return default
+    
+    is_negative = False
+    if s.startswith("(") and s.endswith(")"):
+        is_negative = True
+        s = s[1:-1]
+    if s.lower().endswith("dr"):
+        s = s[:-2].strip()
+    elif s.lower().endswith("cr"):
+        s = s[:-2].strip()
+    
+    s = re.sub(r"[₹\$,\s]|rs\.?|inr", "", s, flags=re.IGNORECASE)
+    
+    match = re.search(r"[-+]?\d+(?:\.\d+)?", s)
+    if match:
+        try:
+            num = float(match.group(0))
+            return -num if is_negative and num > 0 else num
+        except Exception:
+            pass
+            
+    try:
+        num = float(s)
+        return -num if is_negative and num > 0 else num
+    except Exception:
+        return default
+
 def parse_tally_payload(raw_body):
     """
     Parses incoming body into a Python dict/list.
@@ -204,9 +238,9 @@ def handle_tally_post(data):
     to_date = normalize_date(raw_to_date) or auto_to_date
 
     try:
-        opening_bal = float(get_field_val(data, "opening_balance", "opening", "openingbalance") or 0.0)
-        due_amt = float(get_field_val(data, "due_amount", "due", "dueamount") or 0.0)
-        receipt_amt = float(get_field_val(data, "receipt_amount", "receipts", "receiptamount", "receipt") or 0.0)
+        opening_bal = clean_float(get_field_val(data, "opening_balance", "opening", "openingbalance"), 0.0)
+        due_amt = clean_float(get_field_val(data, "due_amount", "due", "dueamount"), 0.0)
+        receipt_amt = clean_float(get_field_val(data, "receipt_amount", "receipts", "receiptamount", "receipt"), 0.0)
         # Calculate balance automatically from the 3 values: (Opening + Due - Receipts)
         net_bal = (opening_bal + due_amt) - receipt_amt
     except Exception as e:
