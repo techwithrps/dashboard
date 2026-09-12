@@ -199,8 +199,10 @@ def get_field_val(d, *keys):
     for k in keys:
         if k in d and d[k] is not None:
             return d[k]
+        norm_k = k.lower().replace("_", "").replace(" ", "").rstrip("s")
         for actual_k in d:
-            if actual_k.lower().replace("_", "") == k.lower().replace("_", "") and d[actual_k] is not None:
+            norm_actual = actual_k.lower().replace("_", "").replace(" ", "").rstrip("s")
+            if norm_actual == norm_k and d[actual_k] is not None:
                 return d[actual_k]
     return None
 
@@ -238,9 +240,9 @@ def handle_tally_post(data):
     to_date = normalize_date(raw_to_date) or auto_to_date
 
     try:
-        opening_bal = clean_float(get_field_val(data, "opening_balance", "opening", "openingbalance"), 0.0)
-        due_amt = clean_float(get_field_val(data, "due_amount", "due", "dueamount"), 0.0)
-        receipt_amt = clean_float(get_field_val(data, "receipt_amount", "receipts", "receiptamount", "receipt"), 0.0)
+        opening_bal = clean_float(get_field_val(data, "opening_balance", "opening", "openingbalance", "opening balance"), 0.0)
+        due_amt = clean_float(get_field_val(data, "due_amount", "due", "dues", "dueamount", "due amount"), 0.0)
+        receipt_amt = clean_float(get_field_val(data, "receipt_amount", "receipts", "receipt", "receiptamount", "receipt amount"), 0.0)
         # Calculate balance automatically from the 3 values: (Opening + Due - Receipts)
         net_bal = (opening_bal + due_amt) - receipt_amt
     except Exception as e:
@@ -277,20 +279,17 @@ def handle_tally_post(data):
         row = cur.fetchone()
         conn.commit()
 
-        # Format row for response
+        # Format clean short row for response
         res_data = {
-            "id": row["id"],
-            "table": table_name,
+            "entity": entity,
             "company_id": row["company_id"],
-            "from_date": str(row["from_date"]),
-            "to_date": str(row["to_date"]),
             "opening_balance": float(row["opening_balance"]),
             "due_amount": float(row["due_amount"]),
             "receipt_amount": float(row["receipt_amount"]),
-            "calculated_balance": float(row["net_balance"]),
+            "balance": float(row["net_balance"]),
             "updated_at": str(row["updated_at"])
         }
-        return {"status": "success", "message": "Tally 3 metrics synced and balance calculated successfully into Neon DB", "data": res_data}, 200
+        return {"status": "success", "message": "Synced successfully", "data": res_data}, 200
     except Exception as e:
         if conn:
             conn.rollback()
