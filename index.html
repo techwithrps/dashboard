@@ -4734,9 +4734,9 @@
         <div class="tally-sync-marquee-bar">
             <div class="marquee-chip">
                 <svg class="chip-bolt" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" />
                 </svg>
-                <span>Instant Sync</span>
+                <span>Note</span>
             </div>
             <div class="marquee-content-wrapper">
                 <div class="marquee-track">
@@ -6025,7 +6025,8 @@
             const badgeIcon = currentAuth.institute_type === 'college' ? '🎓' : '🏫';
             document.getElementById('nav-company-details').textContent = `${badgeIcon} ${currentAuth.company_name} [${currentAuth.company_code}]`;
 
-            switchNavModule('master');
+            const savedModule = sessionStorage.getItem('synctally_active_module') || 'master';
+            switchNavModule(savedModule);
             if (pollInterval) clearInterval(pollInterval);
             pollInterval = setInterval(() => {
                 if (currentNavModule === 'master') {
@@ -6331,6 +6332,9 @@
         function switchNavModule(moduleName) {
             console.log("Switching to module:", moduleName);
             currentNavModule = moduleName;
+            try {
+                sessionStorage.setItem('synctally_active_module', moduleName);
+            } catch (e) {}
             const mods = ['master', 'transaction', 'admin'];
             mods.forEach(m => {
                 const btn = document.getElementById(`nav-mod-${m}`);
