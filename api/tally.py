@@ -43,16 +43,37 @@ def normalize_date(d_str):
             return None
     return None
 
+def resolve_company_id(cid_or_code, entity="school"):
+    if not cid_or_code:
+        return None
+    val = str(cid_or_code).strip()
+    if val.isdigit():
+        return val
+    try:
+        from api.index import get_connection, COLLEGE_DB_USER, SCHOOL_DB_USER
+        schema = COLLEGE_DB_USER if "college" in entity.lower() else SCHOOL_DB_USER
+        conn = get_connection(entity)
+        cur = conn.cursor()
+        cur.execute(f"SELECT COMPANY_ID FROM {schema}.COMPANY_MASTER WHERE UPPER(COMPANY_CODE) = :code", {"code": val.upper()})
+        row = cur.fetchone()
+        conn.close()
+        if row:
+            return str(row[0])
+    except Exception as e:
+        print(f"Resolve company error: {e}")
+    return val
+
 def handle_tally_post(data):
     if not isinstance(data, dict):
         return {"status": "error", "message": "Invalid JSON body"}, 400
 
-    company_id = str(data.get("company_id") or "").strip()
-    if not company_id:
-        return {"status": "error", "message": "company_id is required"}, 400
+    raw_cid = str(data.get("company_id") or data.get("company_code") or "").strip()
+    if not raw_cid:
+        return {"status": "error", "message": "company_id or company_code is required"}, 400
 
     entity = str(data.get("entity") or data.get("institute_type") or "school").lower().strip()
     table_name = "tally_college_summary" if "college" in entity else "tally_school_summary"
+    company_id = resolve_company_id(raw_cid, entity) or raw_cid
     
     import datetime
     today = datetime.date.today()

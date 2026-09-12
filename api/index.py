@@ -266,7 +266,7 @@ def handle_metrics(params):
             total_adv_adj_amt = float(fin_row[4] or 0)
             total_refund_amt = float(fin_row[5] or 0)
 
-            net_outstanding_balance = (total_due_amt + total_ob_amt + total_refund_amt) - (total_discount_amt + total_adv_adj_amt + total_receipts_amt)
+            net_outstanding_balance = (total_due_amt + total_ob_amt) - total_receipts_amt
 
             # Recent receipt vouchers for transaction list
             where_vouchers = ["COMPANY_ID = :cid"]

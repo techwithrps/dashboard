@@ -5979,7 +5979,7 @@
                 const totalOpn = Number(m.total_opening_bal || 0);
                 const totalDue = Number(m.total_due || 0);
                 const totalRcpt = Number(m.total_receipts || 0);
-                const totalBal = (m.net_outstanding !== undefined && m.net_outstanding !== null) ? Number(m.net_outstanding) : ((totalOpn + totalDue) - totalRcpt);
+                const totalBal = (totalOpn + totalDue) - totalRcpt;
 
                 finishTrnLoader(() => {
                     // 1. Tally Account Card
