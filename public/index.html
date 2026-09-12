@@ -3355,9 +3355,236 @@
         /* ---------------- SECTION 2: ACCOUNT SUMMARY (BALANCED & PROPORTIONAL) ---------------- */
         .summary-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: 1fr 190px 1fr;
+            gap: 0px;
             margin-top: 4px;
+            align-items: start;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .summary-grid:not(.diff-active) {
+            grid-template-columns: 1fr 0px 1fr;
+            gap: 24px;
+        }
+
+        /* ---------------- DEDICATED DIFFERENCE COLUMN STYLES ---------------- */
+        .difference-column {
+            width: 190px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 10;
+            overflow: visible;
+            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            user-select: none;
+        }
+
+        .summary-grid:not(.diff-active) .difference-column {
+            width: 0px;
+            opacity: 0;
+            transform: scale(0.8);
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .diff-column-spacer {
+            height: 91px;
+            box-sizing: border-box;
+        }
+
+        .diff-rows-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .diff-row-item {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .diff-row-item.balance-diff {
+            height: 66px;
+        }
+
+        .diff-connector-track {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .diff-edge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #ef4444;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+            z-index: 3;
+            transition: transform 0.25s ease;
+        }
+
+        .diff-edge-dot.left-dot {
+            left: 0;
+            transform: translate(-50%, -50%);
+        }
+
+        .diff-edge-dot.right-dot {
+            right: 0;
+            transform: translate(50%, -50%);
+        }
+
+        .diff-dotted-line {
+            flex: 1;
+            height: 0;
+            border-top: 1.8px dotted #ef4444;
+            margin: 0 6px;
+            opacity: 0.85;
+            transition: all 0.3s ease;
+        }
+
+        .diff-center-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2px 4px;
+            background: transparent;
+            z-index: 2;
+            min-width: 90px;
+            transition: transform 0.25s ease;
+        }
+
+        .diff-badge-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.1px;
+            line-height: 1.15;
+            margin-bottom: 2px;
+        }
+
+        .diff-badge-amount {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #dc2626;
+            letter-spacing: -0.2px;
+            line-height: 1.25;
+            font-feature-settings: "tnum";
+            white-space: nowrap;
+        }
+
+        /* ---------------- DIFFERENCE TOGGLE BUTTON STYLES ---------------- */
+        .diff-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            color: #475569;
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            user-select: none;
+        }
+
+        .diff-toggle-btn:hover {
+            border-color: #94a3b8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+        }
+
+        .diff-toggle-btn.active {
+            background: #fff5f5;
+            border-color: #fca5a5;
+            color: #b91c1c;
+            box-shadow: 0 2px 10px rgba(239, 68, 68, 0.12);
+        }
+
+        .diff-btn-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
+            transition: all 0.25s ease;
+        }
+
+        .diff-toggle-btn.active .diff-btn-pulse {
+            background: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+            animation: pulseDot 2s infinite;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.35); opacity: 0.7; }
+        }
+
+        .diff-btn-tag {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            padding: 2px 6px;
+            border-radius: 6px;
+            background: #e2e8f0;
+            color: #475569;
+            transition: all 0.25s ease;
+        }
+
+        .diff-toggle-btn.active .diff-btn-tag {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        @keyframes diffPopIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.7) translateY(4px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @media (max-width: 1080px) {
+            .summary-grid {
+                grid-template-columns: 1fr 160px 1fr;
+            }
+            .difference-column {
+                width: 160px;
+            }
+            .diff-badge-amount {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 880px) {
+            .summary-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+            .difference-column {
+                display: none !important;
+            }
+            .diff-toggle-btn {
+                display: none;
+            }
         }
 
         .summary-card {
@@ -3452,6 +3679,8 @@
             background: #f8fafc;
             border: 1px solid #edf2f7;
             transition: all 0.15s ease;
+            height: 60px;
+            box-sizing: border-box;
         }
 
         .summary-row:hover {
@@ -3516,6 +3745,8 @@
             background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
             border: 1.5px solid #86efac;
             padding: 13px 16px;
+            height: 66px;
+            box-sizing: border-box;
         }
 
         .summary-row.balance-highlight-green .row-icon {
@@ -3548,6 +3779,8 @@
             background: linear-gradient(135deg, #f5f3ff 0%, #faf5ff 100%);
             border: 1.5px solid #c4b5fd;
             padding: 13px 16px;
+            height: 66px;
+            box-sizing: border-box;
         }
 
         .summary-row.balance-highlight-purple .row-icon {
@@ -4095,27 +4328,39 @@
                                     <p>Overview of your account status</p>
                                 </div>
 
-                                <!-- CURRENT FINANCIAL YEAR BADGE (Automatic FY start to today) -->
-                                <div class="fy-badge-container">
-                                    <div class="fy-badge">
-                                        <div class="fy-badge-icon">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                                <line x1="16" y1="2" x2="16" y2="6"></line>
-                                                <line x1="8" y1="2" x2="8" y2="6"></line>
-                                                <line x1="3" y1="10" x2="21" y2="10"></line>
-                                            </svg>
-                                        </div>
-                                        <div class="fy-badge-content">
-                                            <span class="fy-badge-label">Session Period</span>
-                                            <span class="fy-badge-val" id="current-fy-display">Current Financial Year (01 Apr 2026 - Today)</span>
+                                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                    <!-- DIFFERENCE TOGGLE BUTTON -->
+                                    <button type="button" id="toggle-difference-btn" class="diff-toggle-btn active" onclick="toggleDifferenceView()" title="Toggle Difference Analysis">
+                                        <span class="diff-btn-pulse"></span>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width: 17px; height: 17px;">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                                        </svg>
+                                        <span class="diff-btn-label">Difference View</span>
+                                        <span class="diff-btn-tag" id="diff-status-tag">ACTIVE</span>
+                                    </button>
+
+                                    <!-- CURRENT FINANCIAL YEAR BADGE (Automatic FY start to today) -->
+                                    <div class="fy-badge-container">
+                                        <div class="fy-badge">
+                                            <div class="fy-badge-icon">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                                </svg>
+                                            </div>
+                                            <div class="fy-badge-content">
+                                                <span class="fy-badge-label">Session Period</span>
+                                                <span class="fy-badge-val" id="current-fy-display">Current Financial Year (01 Apr 2026 - Today)</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </header>
 
                             <!-- SECTION 2: ACCOUNT SUMMARY (Tally vs Elogipay) -->
-                            <section class="summary-grid">
+                            <section class="summary-grid diff-active">
             
             <!-- LEFT: Tally Card -->
             <div class="summary-card">
@@ -4192,6 +4437,68 @@
                     <div style="flex: 1;">
                         <div id="tally-realtime-note-title" style="font-weight: 700; color: #78350f; margin-bottom: 2px; font-size: 12px;">Notice: Realtime Sync Pending</div>
                         <div id="tally-realtime-note-text" style="color: #92400e; font-size: 11.5px; font-weight: 500;">Showing records as of previous sync. Please sync from Tally to view live data.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CENTER: DEDICATED DIFFERENCE COLUMN -->
+            <div class="difference-column" id="difference-column">
+                <div class="diff-column-spacer"></div>
+                <div class="diff-rows-list">
+                    <!-- Opening Difference -->
+                    <div class="diff-row-item">
+                        <div class="diff-connector-track">
+                            <span class="diff-edge-dot left-dot"></span>
+                            <span class="diff-dotted-line"></span>
+                            <div class="diff-center-badge">
+                                <span class="diff-badge-title">Difference</span>
+                                <span class="diff-badge-amount" id="diff-live-opening">₹ 10,842.00</span>
+                            </div>
+                            <span class="diff-dotted-line"></span>
+                            <span class="diff-edge-dot right-dot"></span>
+                        </div>
+                    </div>
+
+                    <!-- Due's Difference -->
+                    <div class="diff-row-item">
+                        <div class="diff-connector-track">
+                            <span class="diff-edge-dot left-dot"></span>
+                            <span class="diff-dotted-line"></span>
+                            <div class="diff-center-badge">
+                                <span class="diff-badge-title">Difference</span>
+                                <span class="diff-badge-amount" id="diff-live-due">₹ 0.00</span>
+                            </div>
+                            <span class="diff-dotted-line"></span>
+                            <span class="diff-edge-dot right-dot"></span>
+                        </div>
+                    </div>
+
+                    <!-- Receipts Difference -->
+                    <div class="diff-row-item">
+                        <div class="diff-connector-track">
+                            <span class="diff-edge-dot left-dot"></span>
+                            <span class="diff-dotted-line"></span>
+                            <div class="diff-center-badge">
+                                <span class="diff-badge-title">Difference</span>
+                                <span class="diff-badge-amount" id="diff-live-receipts">₹ 45,250.00</span>
+                            </div>
+                            <span class="diff-dotted-line"></span>
+                            <span class="diff-edge-dot right-dot"></span>
+                        </div>
+                    </div>
+
+                    <!-- Balance Difference -->
+                    <div class="diff-row-item balance-diff">
+                        <div class="diff-connector-track">
+                            <span class="diff-edge-dot left-dot"></span>
+                            <span class="diff-dotted-line"></span>
+                            <div class="diff-center-badge">
+                                <span class="diff-badge-title">Difference</span>
+                                <span class="diff-badge-amount" id="diff-live-balance">₹ 56,092.00</span>
+                            </div>
+                            <span class="diff-dotted-line"></span>
+                            <span class="diff-edge-dot right-dot"></span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -6033,11 +6340,46 @@
                     animateNumber('elogi-live-due', totalDue, 1200, 'currency');
                     animateNumber('elogi-live-receipts', totalRcpt, 1200, 'currency');
                     animateNumber('elogi-live-balance', totalBal, 1200, 'currency');
+
+                    // 3. Dynamically Calculate & Bind Difference Column Metrics
+                    const diffOpn = Math.abs(tallyOpn - totalOpn);
+                    const diffDue = Math.abs(tallyDue - totalDue);
+                    const diffRcpt = Math.abs(tallyRcpt - totalRcpt);
+                    const diffBal = Math.abs(tallyBal - totalBal);
+
+                    animateNumber('diff-live-opening', diffOpn, 1200, 'currency');
+                    animateNumber('diff-live-due', diffDue, 1200, 'currency');
+                    animateNumber('diff-live-receipts', diffRcpt, 1200, 'currency');
+                    animateNumber('diff-live-balance', diffBal, 1200, 'currency');
                 });
 
             } catch (e) {
                 console.error("Failed to fetch live transaction metrics:", e);
                 finishTrnLoader();
+            }
+        }
+
+        function toggleDifferenceView() {
+            const grid = document.querySelector('.summary-grid');
+            const btn = document.getElementById('toggle-difference-btn');
+            const tag = document.getElementById('diff-status-tag');
+            if (!grid || !btn) return;
+
+            const isNowActive = !grid.classList.contains('diff-active');
+            if (isNowActive) {
+                grid.classList.add('diff-active');
+                btn.classList.add('active');
+                if (tag) tag.textContent = 'ACTIVE';
+                const badges = grid.querySelectorAll('.diff-center-badge');
+                badges.forEach((b, idx) => {
+                    b.style.animation = 'none';
+                    void b.offsetWidth;
+                    b.style.animation = `diffPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) ${idx * 60}ms backwards`;
+                });
+            } else {
+                grid.classList.remove('diff-active');
+                btn.classList.remove('active');
+                if (tag) tag.textContent = 'HIDDEN';
             }
         }
 

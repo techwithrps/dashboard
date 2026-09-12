@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import re
 import urllib.parse
 from http.server import BaseHTTPRequestHandler
 from decimal import Decimal
@@ -63,20 +64,85 @@ def resolve_company_id(cid_or_code, entity="school"):
         print(f"Resolve company error: {e}")
     return val
 
+def parse_tally_payload(raw_body):
+    """
+    Parses incoming body into a Python dict/list.
+    Handles:
+    - Standard JSON: {"Data": {"Tally_msg": {...}}}
+    - Quasi-JSON / Tally TDL format: Data { Tally_msg { ... } }
+    - Incomplete or unclosed braces
+    - Embedded JSON objects
+    """
+    if isinstance(raw_body, (dict, list)):
+        return raw_body
+    if not raw_body or not isinstance(raw_body, str):
+        return {}
+    
+    # 1. Try standard JSON parse
+    try:
+        return json.loads(raw_body)
+    except Exception:
+        pass
+
+    # 2. Try lenient fix for quasi-JSON like: Data \n { \n Tally_msg \n { "entity": ...
+    try:
+        cleaned = raw_body.strip()
+        cleaned = re.sub(r"([a-zA-Z0-9_]+)\s*\{", r'"\1": {', cleaned)
+        if not cleaned.startswith("{"):
+            cleaned = "{" + cleaned
+        open_b = cleaned.count("{")
+        close_b = cleaned.count("}")
+        if open_b > close_b:
+            cleaned += "}" * (open_b - close_b)
+        return json.loads(cleaned)
+    except Exception:
+        pass
+
+    # 3. Fallback: extract inner JSON object with company_id / amounts
+    match = re.search(r"\{[^{}]*(?:company_id|due_amount|opening_balance|receipt_amount)[^{}]*\}", raw_body, re.IGNORECASE | re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group(0))
+        except Exception:
+            pass
+
+    # 4. Fallback: regex key-value extraction
+    extracted = {}
+    for m in re.finditer(r"\"?([a-zA-Z0-9_]+)\"?\s*:\s*\"?([^\",\}\n]+)\"?", raw_body):
+        k = m.group(1).strip()
+        v = m.group(2).strip().strip('"').strip("'")
+        extracted[k] = v
+    return extracted
+
 def unwrap_payload(data):
-    if not isinstance(data, dict):
-        return data
-    # Recursively unwrap "Data", "data", "Tally_msg", "tally_msg"
+    """
+    Recursively unwraps wrappers:
+    'Data', 'Tally_msg', nested lists, stringified JSONs
+    """
     curr = data
-    for _ in range(3):
+    for _ in range(5):
+        if isinstance(curr, list) and len(curr) > 0:
+            curr = curr[0]
+            continue
+        if not isinstance(curr, dict):
+            break
         unwrapped = False
         for k in ["Data", "data", "DATA", "Tally_msg", "tally_msg", "TALLY_MSG", "Tally", "tally"]:
-            if isinstance(curr, dict) and k in curr and isinstance(curr[k], dict):
-                curr = curr[k]
-                unwrapped = True
-                break
+            if k in curr:
+                val = curr[k]
+                if isinstance(val, str):
+                    try:
+                        val = parse_tally_payload(val)
+                    except Exception:
+                        pass
+                if isinstance(val, (dict, list)):
+                    curr = val
+                    unwrapped = True
+                    break
         if not unwrapped:
             break
+    if isinstance(curr, list) and len(curr) > 0:
+        curr = curr[0]
     return curr
 
 def get_field_val(d, *keys):
@@ -91,11 +157,17 @@ def get_field_val(d, *keys):
     return None
 
 def handle_tally_post(data):
-    if not isinstance(data, dict):
+    if isinstance(data, str):
+        data = parse_tally_payload(data)
+
+    if not isinstance(data, (dict, list)):
         return {"status": "error", "message": "Invalid JSON body"}, 400
 
-    # Unwrap if sent as {"Data": {"Tally_msg": {...}}} or {"Tally_msg": {...}}
+    # Unwrap if sent as {"Data": {"Tally_msg": {...}}} or {"Tally_msg": {...}} or arrays
     data = unwrap_payload(data)
+
+    if not isinstance(data, dict):
+        return {"status": "error", "message": "Payload could not be resolved into a valid data object"}, 400
 
     raw_cid = str(get_field_val(data, "company_id", "company_code", "companyid", "cid") or "").strip()
     if not raw_cid:
@@ -317,11 +389,7 @@ class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         content_length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else ""
-        try:
-            data = json.loads(body) if body else {}
-        except Exception:
-            data = {}
-        res, code = handle_tally_post(data)
+        res, code = handle_tally_post(body)
         self._send_json(res, code)
 
     def do_GET(self):

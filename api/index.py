@@ -449,7 +449,7 @@ class handler(BaseHTTPRequestHandler):
         elif "/tally" in parsed.path:
             try:
                 from api.tally import handle_tally_post
-                res, code = handle_tally_post(data)
+                res, code = handle_tally_post(body)
                 self._send_json(res, code)
             except Exception as e:
                 self._send_json({"status": "error", "message": str(e)}, 500)

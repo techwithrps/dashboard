@@ -41,7 +41,7 @@ class LocalPortalHandler(BaseHTTPRequestHandler):
             res, code = handle_login(data)
             self._send_json(res, code)
         elif "/tally" in parsed.path:
-            res, code = handle_tally_post(data)
+            res, code = handle_tally_post(body)
             self._send_json(res, code)
         else:
             self._send_json({"error": "Endpoint not found"}, 404)
