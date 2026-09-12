@@ -68,50 +68,61 @@ def parse_tally_payload(raw_body):
     """
     Parses incoming body into a Python dict/list.
     Handles:
-    - Standard JSON: {"Data": {"Tally_msg": {...}}}
-    - Quasi-JSON / Tally TDL format: Data { Tally_msg { ... } }
-    - Incomplete or unclosed braces
-    - Embedded JSON objects
+    - { Data : { Tally_msg: [ { ... } ] } }
+    - { Data { Tally_msg: [ { ... } ] } }
+    - Standard JSON: {"Data": {"Tally_msg": [...]}}
+    - Quasi-JSON / Tally TDL format
+    - Non-breaking spaces and unquoted keys
     """
     if isinstance(raw_body, (dict, list)):
         return raw_body
     if not raw_body or not isinstance(raw_body, str):
         return {}
     
-    # 1. Try standard JSON parse
-    try:
-        return json.loads(raw_body)
-    except Exception:
-        pass
+    cleaned = raw_body.replace("\u00a0", " ").strip()
 
-    # 2. Try lenient fix for quasi-JSON like: Data \n { \n Tally_msg \n { "entity": ...
+    # 1. Direct JSON parse
     try:
-        cleaned = raw_body.strip()
-        cleaned = re.sub(r"([a-zA-Z0-9_]+)\s*\{", r'"\1": {', cleaned)
-        if not cleaned.startswith("{"):
-            cleaned = "{" + cleaned
-        open_b = cleaned.count("{")
-        close_b = cleaned.count("}")
-        if open_b > close_b:
-            cleaned += "}" * (open_b - close_b)
         return json.loads(cleaned)
     except Exception:
         pass
 
+    # 2. Lenient fix for unquoted keys before : or {
+    try:
+        fixed = cleaned
+        fixed = re.sub(r"(?<!\")\b([a-zA-Z0-9_]+)\b\s*:", r"\"\1\":", fixed)
+        fixed = re.sub(r"(?<!\")\b([a-zA-Z0-9_]+)\b\s*\{", r"\"\1\": {", fixed)
+        fixed = re.sub(r",\s*([\}\]])", r"\1", fixed)
+        if not fixed.startswith("{") and not fixed.startswith("["):
+            fixed = "{" + fixed
+        open_b = fixed.count("{")
+        close_b = fixed.count("}")
+        if open_b > close_b:
+            fixed += "}" * (open_b - close_b)
+        open_sq = fixed.count("[")
+        close_sq = fixed.count("]")
+        if open_sq > close_sq:
+            fixed += "]" * (open_sq - close_sq)
+        return json.loads(fixed)
+    except Exception:
+        pass
+
     # 3. Fallback: extract inner JSON object with company_id / amounts
-    match = re.search(r"\{[^{}]*(?:company_id|due_amount|opening_balance|receipt_amount)[^{}]*\}", raw_body, re.IGNORECASE | re.DOTALL)
+    match = re.search(r"\{[^{}]*(?:company_id|due_amount|opening_balance|receipt_amount)[^{}]*\}", cleaned, re.IGNORECASE | re.DOTALL)
     if match:
         try:
             return json.loads(match.group(0))
         except Exception:
             pass
 
-    # 4. Fallback: regex key-value extraction
+    # 4. Fallback regex key-value extraction for valid fields
+    valid_fields = {"entity", "company_id", "company_code", "opening_balance", "due_amount", "receipt_amount", "from_date", "to_date"}
     extracted = {}
-    for m in re.finditer(r"\"?([a-zA-Z0-9_]+)\"?\s*:\s*\"?([^\",\}\n]+)\"?", raw_body):
+    for m in re.finditer(r"\"?([a-zA-Z0-9_]+)\"?\s*:\s*\"?([^\",\}\n\[\]]+)\"?", cleaned):
         k = m.group(1).strip()
-        v = m.group(2).strip().strip('"').strip("'")
-        extracted[k] = v
+        v = m.group(2).strip().strip("\"").strip("'")
+        if k in valid_fields or k.lower() in valid_fields:
+            extracted[k] = v
     return extracted
 
 def unwrap_payload(data):
@@ -126,16 +137,19 @@ def unwrap_payload(data):
             continue
         if not isinstance(curr, dict):
             break
+        # If curr already contains core payload metrics, do not unwrap further
+        if any(k in curr for k in ["company_id", "company_code", "due_amount", "opening_balance"]):
+            break
         unwrapped = False
         for k in ["Data", "data", "DATA", "Tally_msg", "tally_msg", "TALLY_MSG", "Tally", "tally"]:
             if k in curr:
                 val = curr[k]
-                if isinstance(val, str):
+                if isinstance(val, str) and (val.startswith("{") or val.startswith("[")):
                     try:
                         val = parse_tally_payload(val)
                     except Exception:
                         pass
-                if isinstance(val, (dict, list)):
+                if isinstance(val, dict) or (isinstance(val, list) and len(val) > 0):
                     curr = val
                     unwrapped = True
                     break
