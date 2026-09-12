@@ -3662,6 +3662,55 @@
             padding: 5px 12px;
             border-radius: 20px;
             border: 1px solid #e2e8f0;
+            display: inline-flex;
+            align-items: center;
+            letter-spacing: 0.1px;
+            transition: all 0.2s ease;
+        }
+
+        .date-pill.live-pill,
+        .date-pill.tally-realtime {
+            background: #f0fdf4 !important;
+            color: #15803d !important;
+            border-color: #bbf7d0 !important;
+            font-weight: 700 !important;
+        }
+
+        .date-pill.tally-pending {
+            background: #fffbeb !important;
+            color: #b45309 !important;
+            border-color: #fde68a !important;
+            font-weight: 700 !important;
+        }
+
+        .realtime-blink-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #10b981;
+            margin-right: 6px;
+            vertical-align: middle;
+            position: relative;
+            animation: liveBeaconPulse 1.5s infinite ease-in-out;
+        }
+
+        @keyframes liveBeaconPulse {
+            0% {
+                transform: scale(0.92);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+                opacity: 0.75;
+            }
+            50% {
+                transform: scale(1.25);
+                box-shadow: 0 0 0 4px rgba(16, 185, 129, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0.92);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+                opacity: 0.75;
+            }
         }
 
         .summary-rows-list {
@@ -6250,6 +6299,49 @@
             return dStr;
         };
 
+        function formatSyncTimestamp(rawTimestamp, fallbackDateStr) {
+            if (!rawTimestamp && !fallbackDateStr) return 'Last Sync: Pending';
+            
+            let timeFormatted = '';
+            let dateFormatted = '';
+
+            if (rawTimestamp) {
+                try {
+                    let clean = String(rawTimestamp).trim();
+                    if (clean.includes(' ') && !clean.includes('T')) {
+                        clean = clean.replace(' ', 'T');
+                    }
+                    const d = new Date(clean);
+                    if (!isNaN(d.getTime())) {
+                        timeFormatted = d.toLocaleTimeString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                        }); // e.g. "05:07 PM"
+                        dateFormatted = d.toLocaleDateString('en-GB', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                        }); // e.g. "12 Sep 2026"
+                    }
+                } catch (e) {}
+            }
+
+            if (!dateFormatted && fallbackDateStr) {
+                dateFormatted = fmtDateStr(fallbackDateStr);
+            }
+
+            if (timeFormatted && dateFormatted) {
+                return `Last Sync: ${timeFormatted} (${dateFormatted})`;
+            } else if (timeFormatted) {
+                return `Last Sync: ${timeFormatted}`;
+            } else if (dateFormatted) {
+                return `Last Sync: ${dateFormatted}`;
+            } else {
+                return 'Last Sync: Pending';
+            }
+        }
+
         function initDatePickers() {
             const fy = getFYRange();
             const elDisplay = document.getElementById('current-fy-display');
@@ -6258,10 +6350,16 @@
             }
 
             const pillElogi = document.getElementById('elogipay-date-pill');
-            if (pillElogi) pillElogi.textContent = `As on Today (${fy.todayFormatted})`;
+            if (pillElogi) {
+                pillElogi.className = 'date-pill live-pill';
+                pillElogi.innerHTML = `<span class="realtime-blink-dot"></span>As on Today (${fy.todayFormatted})`;
+            }
 
             const pillTally = document.getElementById('tally-date-pill');
-            if (pillTally) pillTally.textContent = `Current FY`;
+            if (pillTally) {
+                pillTally.className = 'date-pill';
+                pillTally.textContent = `Last Sync: Checking...`;
+            }
         }
 
         function handleDateRangeChange() {
@@ -6306,36 +6404,38 @@
                     animateNumber('tally-live-receipts', tallyRcpt, 1200, 'currency');
                     animateNumber('tally-live-balance', tallyBal, 1200, 'currency');
 
+                    let lastDateStr = m.tally_last_synced_date || m.tally_to_date || m.to_date || '';
+                    let syncLabel = formatSyncTimestamp(m.tally_updated_at, lastDateStr);
+
                     if (isRealtime) {
                         if (noteEl) noteEl.style.display = 'none';
                         if (pillTally) {
-                            pillTally.style.background = '#f0fdf4';
-                            pillTally.style.color = '#15803d';
-                            pillTally.style.borderColor = '#bbf7d0';
-                            pillTally.textContent = '● Realtime Synced (Today)';
+                            pillTally.className = 'date-pill tally-realtime';
+                            pillTally.innerHTML = `<span class="realtime-blink-dot"></span>${syncLabel}`;
                         }
                     } else {
                         if (noteEl) {
                             noteEl.style.display = 'flex';
-                            let lastDateStr = m.tally_last_synced_date ? fmtDateStr(m.tally_last_synced_date) : (m.to_date ? fmtDateStr(m.to_date) : 'Previous Sync');
                             const noteTitle = document.getElementById('tally-realtime-note-title');
                             if (noteTitle) {
-                                noteTitle.textContent = `Notice: Showing Last Synced Data (${lastDateStr})`;
+                                noteTitle.textContent = `Notice: Showing Last Synced Data (${syncLabel})`;
                             }
                             if (noteText) {
-                                noteText.textContent = `Realtime sync for today is pending. Displaying figures recorded on ${lastDateStr}. Please initiate a sync from Tally to view live numbers.`;
+                                noteText.textContent = `Realtime sync for today is pending. Displaying figures recorded on ${syncLabel}. Please initiate a sync from Tally to view live numbers.`;
                             }
                         }
                         if (pillTally) {
-                            pillTally.style.background = '#fffbeb';
-                            pillTally.style.color = '#b45309';
-                            pillTally.style.borderColor = '#fde68a';
-                            let lastDateLabel = m.tally_last_synced_date ? fmtDateStr(m.tally_last_synced_date) : 'Previous Sync';
-                            pillTally.textContent = `As on ${lastDateLabel}`;
+                            pillTally.className = 'date-pill tally-pending';
+                            pillTally.textContent = syncLabel;
                         }
                     }
 
                     // 2. Bind Elogipay Account Card with High-Precision Animations
+                    const pillElogi = document.getElementById('elogipay-date-pill');
+                    if (pillElogi) {
+                        pillElogi.className = 'date-pill live-pill';
+                        pillElogi.innerHTML = `<span class="realtime-blink-dot"></span>As on Today (${fy.todayFormatted})`;
+                    }
                     animateNumber('elogi-live-opening', totalOpn, 1200, 'currency');
                     animateNumber('elogi-live-due', totalDue, 1200, 'currency');
                     animateNumber('elogi-live-receipts', totalRcpt, 1200, 'currency');

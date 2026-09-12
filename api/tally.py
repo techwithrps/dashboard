@@ -373,16 +373,29 @@ def get_tally_summary(company_id, institute_type="school", from_date=None, to_da
         """, (cid,))
         latest_row = cur.fetchone()
 
+        # 3. Fallback: check alternative entity table (school <-> college)
+        if not latest_row:
+            alt_table = "tally_school_summary" if table_name == "tally_college_summary" else "tally_college_summary"
+            cur.execute(f"""
+            SELECT opening_balance, due_amount, receipt_amount, net_balance, from_date, to_date, updated_at
+            FROM {alt_table}
+            WHERE company_id = %s
+            ORDER BY to_date DESC, updated_at DESC
+            LIMIT 1;
+            """, (cid,))
+            latest_row = cur.fetchone()
+
         if latest_row:
             last_date = str(latest_row["to_date"])
+            is_today = (last_date == clean_to)
             opn = float(latest_row["opening_balance"] or 0)
             due = float(latest_row["due_amount"] or 0)
             rcpt = float(latest_row["receipt_amount"] or 0)
             bal = float(latest_row["net_balance"]) if (latest_row.get("net_balance") is not None and latest_row.get("net_balance") != 0) else ((opn + due) - rcpt)
-            msg = f"Notice: Today's realtime data is pending sync. Displaying last recorded figures as of {last_date}. Please sync from Tally to view live updates."
+            msg = "Realtime synced with Tally" if is_today else f"Notice: Today's realtime data is pending sync. Displaying last recorded figures as of {last_date}."
             return {
                 "has_data": True,
-                "is_realtime": False,
+                "is_realtime": is_today,
                 "opening_balance": opn,
                 "due_amount": due,
                 "receipt_amount": rcpt,

@@ -413,6 +413,7 @@ def handle_metrics(params):
             "tally_due": float(tally_data.get("due_amount") or 0.0),
             "tally_receipts": float(tally_data.get("receipt_amount") or 0.0),
             "tally_balance": float(tally_data.get("net_balance") or 0.0),
+            "tally_to_date": str(tally_data.get("to_date") or tally_data.get("last_synced_date") or ""),
             "tally_updated_at": str(tally_data.get("updated_at") or "")
         }, 200
     except Exception as e:
