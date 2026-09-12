@@ -4430,7 +4430,7 @@
 
                 <div>
 
-                    <button class="btn-signout" onclick="handleSignOut()">Switch Company</button>
+                    <button class="btn-signout" onclick="handleSignOut()">Logout</button>
 
                 </div>
 
@@ -6633,6 +6633,7 @@
 
         function handleSignOut() {
             localStorage.removeItem('synctally_cloud_auth');
+            try { sessionStorage.removeItem('synctally_active_module'); } catch (e) {}
             currentAuth = null;
             if (pollInterval) clearInterval(pollInterval);
             document.body.classList.remove('dashboard-active');
