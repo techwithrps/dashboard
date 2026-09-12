@@ -4329,14 +4329,14 @@
                                 </div>
 
                                 <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                                    <!-- DIFFERENCE TOGGLE BUTTON -->
-                                    <button type="button" id="toggle-difference-btn" class="diff-toggle-btn active" onclick="toggleDifferenceView()" title="Toggle Difference Analysis">
+                                    <!-- DIFFERENCE TOGGLE BUTTON (Hidden by default, reveals with animation on click) -->
+                                    <button type="button" id="toggle-difference-btn" class="diff-toggle-btn" onclick="toggleDifferenceView()" title="Click to Compare Difference">
                                         <span class="diff-btn-pulse"></span>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width: 17px; height: 17px;">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
                                         </svg>
                                         <span class="diff-btn-label">Difference View</span>
-                                        <span class="diff-btn-tag" id="diff-status-tag">ACTIVE</span>
+                                        <span class="diff-btn-tag" id="diff-status-tag">OFF</span>
                                     </button>
 
                                     <!-- CURRENT FINANCIAL YEAR BADGE (Automatic FY start to today) -->
@@ -4360,7 +4360,7 @@
                             </header>
 
                             <!-- SECTION 2: ACCOUNT SUMMARY (Tally vs Elogipay) -->
-                            <section class="summary-grid diff-active">
+                            <section class="summary-grid">
             
             <!-- LEFT: Tally Card -->
             <div class="summary-card">
@@ -6376,10 +6376,16 @@
                     void b.offsetWidth;
                     b.style.animation = `diffPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) ${idx * 60}ms backwards`;
                 });
+                const lines = grid.querySelectorAll('.diff-dotted-line');
+                lines.forEach((l) => {
+                    l.style.animation = 'none';
+                    void l.offsetWidth;
+                    l.style.animation = `diffLineExpand 0.35s ease-out backwards`;
+                });
             } else {
                 grid.classList.remove('diff-active');
                 btn.classList.remove('active');
-                if (tag) tag.textContent = 'HIDDEN';
+                if (tag) tag.textContent = 'OFF';
             }
         }
 
