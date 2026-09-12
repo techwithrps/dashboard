@@ -454,5 +454,12 @@ class handler(BaseHTTPRequestHandler):
         if "/metrics" in parsed.path:
             res, code = handle_metrics(params)
             self._send_json(res, code)
+        elif "/keepalive" in parsed.path:
+            try:
+                from api.keepalive import ping_neon_database
+                res, code = ping_neon_database()
+                self._send_json(res, code)
+            except Exception as e:
+                self._send_json({"status": "error", "error": str(e)}, 500)
         else:
             self._send_json({"status": "SyncTally API Online"}, 200)
