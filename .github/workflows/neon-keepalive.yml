@@ -1,0 +1,25 @@
+name: Neon DB Keep-Alive Heartbeat
+
+on:
+  schedule:
+    # Runs every 2 days at 06:00 UTC (11:30 AM IST)
+    - cron: '0 6 */2 * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  ping-neon:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Neon PostgreSQL Database via Dashboard Keepalive API
+        run: |
+          echo "Sending keep-alive heartbeat to Neon DB..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" "https://dashboard-chi-two-41.vercel.app/api/keepalive")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+          echo "HTTP Status Code: $HTTP_CODE"
+          echo "Response Body: $BODY"
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "Keepalive check failed!"
+            exit 1
+          fi
+          echo "Neon DB is alive and active!"

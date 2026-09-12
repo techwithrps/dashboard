@@ -52,6 +52,10 @@ class LocalPortalHandler(BaseHTTPRequestHandler):
             params = urllib.parse.parse_qs(parsed.query)
             res, code = handle_metrics(params)
             self._send_json(res, code)
+        elif "/keepalive" in parsed.path:
+            from api.keepalive import ping_neon_database
+            res, code = ping_neon_database()
+            self._send_json(res, code)
         elif "/tally" in parsed.path:
             params = urllib.parse.parse_qs(parsed.query)
             cid = params.get("company_id", [""])[0]
